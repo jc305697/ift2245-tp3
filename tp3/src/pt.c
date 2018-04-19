@@ -35,6 +35,10 @@ void pt_init (FILE *log)
 static int pt__lookup (unsigned int page_number)
 {
   // TODO: COMPLÉTER CETTE FONCTION.
+  if (page_number < NUM_PAGES  && page_number >= 0 && page_table[page_number].valid){
+     return page_table[page_number].frame_number;
+  }
+
   return -1;
 }
 
@@ -43,19 +47,34 @@ static int pt__lookup (unsigned int page_number)
 static void pt__set_entry (unsigned int page_number, unsigned int frame_number)
 {
   // TODO: COMPLÉTER CETTE FONCTION.
+  if (page_number < NUM_PAGES  && page_number >= 0)
+  {
+    page_table[page_number].valid = true;
+    page_table[page_number].frame_number = frame_number;
+  }
+
 }
 
 /* Marque l'entrée de `page_number` dans la page table comme invalide.  */
 void pt_unset_entry (unsigned int page_number)
 {
   // TODO: COMPLÉTER CETTE FONCTION.
+
+  if (page_number < NUM_PAGES  && page_number >= 0)
+  {
+    page_table[page_number].valid=false;
+  }
 }
 
 /* Renvoie si `page_number` est `readonly`.  */
 bool pt_readonly_p (unsigned int page_number)
 {
   // TODO: COMPLÉTER CETTE FONCTION.
-  return true;
+   if (page_number < NUM_PAGES  && page_number >= 0){
+    return page_table[page_number].valid;
+   }
+
+  return false;
 }
 
 /* Change l'accès en écriture de `page_number` selon `readonly`.  */
