@@ -14,7 +14,7 @@ struct page
 };
 
 static FILE *pt_log = NULL;
-static struct page page_table[NUM_PAGES];
+static struct page page_table[NUM_PAGES];//page table est un tableau de page 
 
 static unsigned int pt_lookup_count = 0;
 static unsigned int pt_page_fault_count = 0;
