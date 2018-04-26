@@ -41,15 +41,36 @@ char vmm_read (unsigned int laddress)
 {
   char c = '!';
   read_count++;
+  
+  //256 bits / page --> 2^8 offset, 2^8 page number
+  //Shift pour ne prendre que les chiffres de gauche
+  int pageNumber = laddress >> 8;
+  
+  //TODO: Créer le tlb
+  int frameNumber = tlb_lookup (tlb, pageNumber);
+  
+  if (frameNumber < 0){
+	//TLB Miss
+	frameNumber = pt_lookup(pageNumber);
+	if (frameNumber < 0){
+		//Page Fault
+		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
+		pm_download_page(pageNumber, frameNumber);
+		pt_set_entry(pageNumber, frameNumber);
+	}
+  }else{
+	 
+  }
+  //Concaténation à 0000000011111111
+  int offset = laddress && 255;
+  
   /* ¡ TODO: COMPLÉTER ! */
-  //va devoir trouver le numero de page -> divise l'adresse logique par 256 et 
-  //la partie entière est le numero de page et le offset est addresse modulo 256
-  //va ensuite chercher dans tlb si la page n'est pas dans le tbl alors on va cherher 
   //dans la table des pages et si la page a un frame associer on swap la page 
   //avec une autre page dans le tlb. S'il n'y a pas de page 
-
-  // TODO: Fournir les arguments manquants.
-  vmm_log_command (stdout, "READING", laddress, 0, 0, 0, 0, c);
+  
+  int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
+  c = pm_read (addressPhysique);
+  vmm_log_command (stdout, "READING", laddress, pageNumber, frameNumber, offset, addressPhysique, c);
   return c;
 }
 
@@ -57,14 +78,31 @@ char vmm_read (unsigned int laddress)
 void vmm_write (unsigned int laddress, char c)
 {
   write_count++;
+  int pageNumber = laddress >> 8;
+  
+  //TODO: Créer le tlb
+  int frameNumber = tlb_lookup (tlb, pageNumber);
+  if (frameNumber < 0){
+	//TLB Miss
+	frameNumber = pt_lookup(pageNumber);
+	if (frameNumber < 0){
+		//Page Fault
+		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
+		pm_download_page(pageNumber, frameNumber);
+		pt_set_entry(pageNumber, frameNumber);
+	}
+  }else{
+	 
+  }
 
+  int offset = laddress && 255;
+  int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
+  pm_write(paddress, c);
   //pas sure de ça puisque soit on ecrit sur le frame puis on quand on fait un 
   //swap de frame si on a ecrit sur le frame on va recopier sur le disque sinon pas besoin??
   //ou soit on ecrit directement sur le disque (less likely)
-  /* ¡ TODO: COMPLÉTER ! */
 
-  // TODO: Fournir les arguments manquants.
-  vmm_log_command (stdout, "WRITING", laddress, 0, 0, 0, 0, c);
+  vmm_log_command (stdout, "WRITING", laddress, pageNumber, frameNumber, offset, addressPhysique, c);
 }
 
 
