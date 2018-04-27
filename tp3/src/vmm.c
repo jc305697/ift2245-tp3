@@ -47,17 +47,18 @@ char vmm_read (unsigned int laddress)
   int pageNumber = laddress >> 8;
   
   //TODO: Créer le tlb
-  int frameNumber = tlb_lookup (tlb, pageNumber);
+  //int frameNumber = tlb_lookup (tlb, pageNumber);
+  int frameNumber = tlb_lookup (pageNumber,false);
   
   if (frameNumber < 0){
 	//TLB Miss
-	frameNumber = pt_lookup(pageNumber);
-	if (frameNumber < 0){
-		//Page Fault
-		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-		pm_download_page(pageNumber, frameNumber);
-		pt_set_entry(pageNumber, frameNumber);
-	}
+  	frameNumber = pt_lookup(pageNumber);
+  	if (frameNumber < 0){
+  		//Page Fault
+  		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
+  		pm_download_page(pageNumber, frameNumber);
+  		pt_set_entry(pageNumber, frameNumber);
+  	}
   }else{
 	 
   }
@@ -65,6 +66,7 @@ char vmm_read (unsigned int laddress)
   int offset = laddress && 255;
   
   /* ¡ TODO: COMPLÉTER ! */
+  //va ensuite chercher dans tlb si la page n'est pas dans le tbl alors on va cherher 
   //dans la table des pages et si la page a un frame associer on swap la page 
   //avec une autre page dans le tlb. S'il n'y a pas de page 
   
@@ -84,13 +86,13 @@ void vmm_write (unsigned int laddress, char c)
   int frameNumber = tlb_lookup (tlb, pageNumber);
   if (frameNumber < 0){
 	//TLB Miss
-	frameNumber = pt_lookup(pageNumber);
-	if (frameNumber < 0){
-		//Page Fault
-		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-		pm_download_page(pageNumber, frameNumber);
-		pt_set_entry(pageNumber, frameNumber);
-	}
+  	frameNumber = pt_lookup(pageNumber);
+  	if (frameNumber < 0){
+  		//Page Fault
+  		frameNumber = 10; //TODO:Changer ceci, comment trouve une frame dispo?
+  		pm_download_page(pageNumber, frameNumber);
+  		pt_set_entry(pageNumber, frameNumber);
+  	}
   }else{
 	 
   }

@@ -50,7 +50,7 @@ static void pt__set_entry (unsigned int page_number, unsigned int frame_number)
   if (page_number < NUM_PAGES  && page_number >= 0)
   {
     page_table[page_number].valid = true;
-	page_table[page_number].readonly = true;	//Référence doit pas pouvoir être écrasée
+	  page_table[page_number].readonly = true;	//Référence doit pas pouvoir être écrasée
     page_table[page_number].frame_number = frame_number;
   }
 
