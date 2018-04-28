@@ -65,6 +65,9 @@ void pt_unset_entry (unsigned int page_number)
   {
     page_table[page_number].valid=false;
   }
+  
+
+  
 }
 
 /* Renvoie si `page_number` est `readonly`.  */

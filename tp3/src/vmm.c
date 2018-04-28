@@ -11,23 +11,29 @@
 #include "pt.h"
 #include "pm.h"
 
+struct acces {
+  unsigned int numPage;
+  unsigned int numFrame;
+};
 
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
-static unsigned int sequenceAcces[NUM_PAGES];
+static struct acces sequenceAcces[NUM_PAGES];
 
 
-unsigned int getLRU(){
+struct acces getLRU(){
   return sequenceAcces[NUM_PAGES -1];
 }
 
-void accesFrame( unsigned int frame_number){
+void accesFrame( struct acces frame){
 
   int position_frame;
+  struct acces frameSpecifie;
   for (position_frame = 0; position_frame < NUM_PAGES; ++position_frame)
   {
-    if (sequenceAcces[position_frame] == frame_number){
+    if (sequenceAcces[position_frame].numFrame == frame.numFrame){
+          frameSpecifie = sequenceAcces[position_frame];
           break;
     }    
   }
@@ -37,7 +43,7 @@ void accesFrame( unsigned int frame_number){
     sequenceAcces[i+1] = sequenceAcces[i];
   }
   // le premier frame est le plus recemment acceder 
-  sequenceAcces[0] = frame_number;
+  sequenceAcces[0] = frameSpecifie;
 
 }
 
@@ -49,10 +55,15 @@ void accesFrame( unsigned int frame_number){
 /* void algo_LRU(unsigned int frame_number_new){
     accesFrameRemplace(frame_number_new,sequenceAcces[NUM_PAGESN - 1 ]);
 }*/
-void pageFault(unsigned int pageNumber, unsigned int frameNumber){
+void pageFault(unsigned int pageNumber, struct acces ancienFrame){
+  unsigned int frameNumber = ancienFrame.numFrame;
+  pm_backup_page(frameNumber,ancienFrame.numPage);
+  pt_unset_entry(ancienFrame.numPage);
+
   pm_download_page(pageNumber, frameNumber);
   pt_set_entry(pageNumber, frameNumber);
-  accesFrame(frameNumber);
+  struct acces frameAcceder = {.numFrame = frameNumber, .numPage = pageNumber};
+  accesFrame(frameAcceder);
 }
 void vmm_init (FILE *log)
 {
@@ -94,13 +105,16 @@ char vmm_read (unsigned int laddress)
   	frameNumber = pt_lookup(pageNumber);
   	if (frameNumber < 0){
   		//Page Fault
-      frameNumber = getLRU();
+      struct acces frameAcces = getLRU();
+      frameNumber = frameAcces.numFrame;
   		//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-      pageFault(pageNumber,frameNumber);
+      pageFault(pageNumber,frameAcces);
   		
   	}
   }else{
-	   accesFrame(frameNumber);
+	  struct acces accesPage = (struct acces) {.numPage = pageNumber, .numFrame = frameNumber};
+
+    accesFrame(accesPage);
   }
   //Concaténation à 0000000011111111
   int offset = laddress & 255;
@@ -129,11 +143,15 @@ void vmm_write (unsigned int laddress, char c)
   	frameNumber = pt_lookup(pageNumber);
   	if (frameNumber < 0){
   		//Page Fault
-  		frameNumber = getLRU(); //TODO:Changer ceci, comment trouve une frame dispo?
-  		pageFault(pageNumber,frameNumber);
+  		struct acces frameAcces = getLRU();
+      frameNumber = frameAcces.numFrame;
+
+  		pageFault(pageNumber,frameAcces);
   	}
   }else{
-	 accesFrame(frameNumber);
+    struct acces accesPage;
+    accesPage = (struct acces) {.numPage = pageNumber, .numFrame = frameNumber};
+	  accesFrame(accesPage);
   }
 
   int offset = laddress & 255;
