@@ -17,14 +17,14 @@ static FILE *tlb_log = NULL;
 //declare le tlb comme tlbentries 
 static struct tlb_entry tlb_entries[TLB_NUM_ENTRIES]; 
 
-static int sequenceAcces[TLB_NUM_ENTRIES];
+static unsigned int sequenceAcces[TLB_NUM_ENTRIES];
 
 static unsigned int tlb_hit_count = 0;
 static unsigned int tlb_miss_count = 0;
 static unsigned int tlb_mod_count = 0;
 
 
-void accesPage(int page_number){
+void accesPage(unsigned int page_number){
 
   int position_page;
   for (position_page = 0; position_page < TLB_NUM_ENTRIES; ++position_page)
@@ -43,12 +43,12 @@ void accesPage(int page_number){
 
 }
 
-void accesPageRemplace(int page_number_new,int page_number_old){
+void accesPageRemplace(unsigned int page_number_new,unsigned int page_number_old){
   accesPage(page_number_old);
   sequenceAcces[0] = page_number_new;
 }
 
-void algo_LRU(int page_number_new){
+void algo_LRU(unsigned int page_number_new){
   accesPageRemplace(page_number_new,sequenceAcces[TLB_NUM_ENTRIES - 1 ]);
 }
 

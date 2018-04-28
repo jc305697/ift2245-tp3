@@ -11,10 +11,49 @@
 #include "pt.h"
 #include "pm.h"
 
+
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
+static unsigned int sequenceAcces[NUM_PAGES];
 
+
+unsigned int getLRU(){
+  return sequenceAcces[NUM_PAGES -1];
+}
+
+void accesFrame( unsigned int frame_number){
+
+  int position_frame;
+  for (position_frame = 0; position_frame < NUM_PAGES; ++position_frame)
+  {
+    if (sequenceAcces[position_frame] == frame_number){
+          break;
+    }    
+  }
+  //decale les entrées jusqu'a l'ancienne position du frame_number
+  for (int i = 0; i < position_frame; ++i)
+  {
+    sequenceAcces[i+1] = sequenceAcces[i];
+  }
+  // le premier frame est le plus recemment acceder 
+  sequenceAcces[0] = frame_number;
+
+}
+
+/*void accesFrameRemplace(unsigned int frame_number_new,unsigned int frame_number_old){
+    accesFrame(frame_number_old);
+    sequenceAcces[0] = frame_number_new;
+  }*/
+
+/* void algo_LRU(unsigned int frame_number_new){
+    accesFrameRemplace(frame_number_new,sequenceAcces[NUM_PAGESN - 1 ]);
+}*/
+void pageFault(unsigned int pageNumber, unsigned int frameNumber){
+  pm_download_page(pageNumber, frameNumber);
+  pt_set_entry(pageNumber, frameNumber);
+  accesFrame(frameNumber);
+}
 void vmm_init (FILE *log)
 {
   // Initialise le fichier de journal.
@@ -44,23 +83,24 @@ char vmm_read (unsigned int laddress)
   
   //256 bits / page --> 2^8 offset, 2^8 page number
   //Shift pour ne prendre que les chiffres de gauche
-  int pageNumber = laddress >> 8;
+  unsigned int pageNumber = laddress >> 8;
   
   //TODO: Créer le tlb
   //int frameNumber = tlb_lookup (tlb, pageNumber);
-  int frameNumber = tlb_lookup (pageNumber,false);
+  unsigned int frameNumber = tlb_lookup (pageNumber,false);
   
   if (frameNumber < 0){
 	//TLB Miss
   	frameNumber = pt_lookup(pageNumber);
   	if (frameNumber < 0){
   		//Page Fault
-  		frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-  		pm_download_page(pageNumber, frameNumber);
-  		pt_set_entry(pageNumber, frameNumber);
+      frameNumber = getLRU();
+  		//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
+      pageFault(pageNumber,frameNumber);
+  		
   	}
   }else{
-	 
+	   accesFrame(frameNumber);
   }
   //Concaténation à 0000000011111111
   int offset = laddress & 255;
@@ -80,21 +120,20 @@ char vmm_read (unsigned int laddress)
 void vmm_write (unsigned int laddress, char c)
 {
   write_count++;
-  int pageNumber = laddress >> 8;
+  unsigned int pageNumber = laddress >> 8;
   
   //TODO: Créer le tlb
-  int frameNumber = tlb_lookup (pageNumber, true);
+  unsigned int frameNumber = tlb_lookup (pageNumber, true);
   if (frameNumber < 0){
 	//TLB Miss
   	frameNumber = pt_lookup(pageNumber);
   	if (frameNumber < 0){
   		//Page Fault
-  		frameNumber = 10; //TODO:Changer ceci, comment trouve une frame dispo?
-  		pm_download_page(pageNumber, frameNumber);
-  		pt_set_entry(pageNumber, frameNumber);
+  		frameNumber = getLRU(); //TODO:Changer ceci, comment trouve une frame dispo?
+  		pageFault(pageNumber,frameNumber);
   	}
   }else{
-	 
+	 accesFrame(frameNumber);
   }
 
   int offset = laddress & 255;
