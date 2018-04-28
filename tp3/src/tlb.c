@@ -26,8 +26,8 @@ static unsigned int tlb_mod_count = 0;
 
 void accesPage(int page_number){
 
-
-  for (int position_page = 0; i < TLB_NUM_ENTRIES; ++position_page)
+  int position_page;
+  for (position_page = 0; position_page < TLB_NUM_ENTRIES; ++position_page)
   {
     if (sequenceAcces[position_page] == page_number){
           break;
@@ -95,7 +95,7 @@ static void tlb__add_entry (unsigned int page_number,
 
 /******************** ¡ NE RIEN CHANGER CI-DESSOUS !  ******************/
 
-void tlb_add_entry (unsigned int page_number
+void tlb_add_entry (unsigned int page_number,
                     unsigned int frame_number, bool readonly)
 {
   tlb_mod_count++;
