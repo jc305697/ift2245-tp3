@@ -63,7 +63,7 @@ char vmm_read (unsigned int laddress)
 	 
   }
   //Concaténation à 0000000011111111
-  int offset = laddress && 255;
+  int offset = laddress & 255;
   
   /* ¡ TODO: COMPLÉTER ! */
   //va ensuite chercher dans tlb si la page n'est pas dans le tbl alors on va cherher 
@@ -83,7 +83,7 @@ void vmm_write (unsigned int laddress, char c)
   int pageNumber = laddress >> 8;
   
   //TODO: Créer le tlb
-  int frameNumber = tlb_lookup (tlb, pageNumber);
+  int frameNumber = tlb_lookup (pageNumber, true);
   if (frameNumber < 0){
 	//TLB Miss
   	frameNumber = pt_lookup(pageNumber);
@@ -97,9 +97,9 @@ void vmm_write (unsigned int laddress, char c)
 	 
   }
 
-  int offset = laddress && 255;
+  int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
-  pm_write(paddress, c);
+  pm_write(addressPhysique, c);
   //pas sure de ça puisque soit on ecrit sur le frame puis on quand on fait un 
   //swap de frame si on a ecrit sur le frame on va recopier sur le disque sinon pas besoin??
   //ou soit on ecrit directement sur le disque (less likely)

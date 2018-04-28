@@ -83,14 +83,19 @@ static void tlb__add_entry (unsigned int page_number,
     int pageVictime = sequenceAcces[TLB_NUM_ENTRIES - 1];
 	  int victim = 0;
 	for ( victim = 0; victim < TLB_NUM_ENTRIES; victim++){
+    //cherche dans le tlb la page victime 
     if (tlb_entries[victim].page_number == pageVictime){
+
       break;
     }
 		//TODO: stuff
 	}
+    accesPageRemplace(page_number,sequenceAcces[TLB_NUM_ENTRIES - 1]);
     tlb_entries[victim].page_number = page_number;
     tlb_entries[victim].frame_number = frame_number;
     tlb_entries[victim].readonly = readonly;
+
+
 }
 
 /******************** ¡ NE RIEN CHANGER CI-DESSOUS !  ******************/

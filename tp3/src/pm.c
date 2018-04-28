@@ -83,6 +83,7 @@ char pm_read (unsigned int physical_address)
   //Unsigned peut être négatif ou en dehors de l'interval accepté
   if (physical_address < 0){
 	  printf("lecture - Ladresse physique est négative");
+  }
   else if (physical_address >= PHYSICAL_MEMORY_SIZE){
 	  printf("lecture - Ladresse physique est out of bound");
   }else{
@@ -97,6 +98,7 @@ void pm_write (unsigned int physical_address, char c)
   //Unsigned peut être négatif ou en dehors de l'interval accepté
   if (physical_address < 0){
 	  printf("écriture - Ladresse physique est négative");
+  }  
   else if (physical_address >= PHYSICAL_MEMORY_SIZE){
 	  printf("écriture - Ladresse physique est out of bound");
   }else{
