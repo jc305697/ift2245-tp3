@@ -19,8 +19,8 @@ struct acces {
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
-static struct acces sequenceAcces[NUM_PAGES];
-
+static struct acces sequenceAcces2[NUM_PAGES];
+static unsigned int sequenceAcces[NUM_FRAMES] = {0};
 
 void vmm_init (FILE *log)
 {
@@ -82,7 +82,20 @@ void pageFault(unsigned int pageNumber, struct acces ancienFrame){
   struct acces frameAcceder = {.numFrame = frameNumber, .numPage = pageNumber};
   accesFrame(frameAcceder);
 }
-
+int getFrameLRU(int pageNumber){
+	int frameVictime = 0;
+	for (int i = 0; i< NUM_FRAMES; i++){
+		if (sequenceAcces[i]<sequenceAcces[frameVictime]){
+			frameVictime = i;
+		}
+		if (i == frameNumber){
+			  sequenceAcces[i] += 0x40000000;
+		}else{
+			  sequenceAcces[i] >> 1;
+		}
+	}
+	return frameVictime;
+}
 int trouverFrame(int pageNumber){
 	
   unsigned int frameNumber = tlb_lookup (pageNumber,false);
@@ -93,10 +106,10 @@ int trouverFrame(int pageNumber){
   	if (frameNumber < 0){
 		//TODO: CHANGER ÇA POUR UN VRAI ALGO
 		 srand(time(0));
-         frame = rand() % NUM_FRAMES;
+         frameNumber = getFrameLRU(pageNumber);
   		//Page Fault
 		pm_backup_page(frameNumber,pageNumber);
-		pt_unset_entry(ancienFrame.numPage);
+		pt_unset_entry(pageNumber);
 		pm_download_page(pageNumber,frameNumber);
 		pt_set_entry(pageNumber,frameNumber);
       //struct acces frameAcces = getLRU();
@@ -108,6 +121,8 @@ int trouverFrame(int pageNumber){
 	
 	tlb_add_entry(pageNumber,frameNumber,pt_readonly_p(pageNumber));
   }
+  
+  
   return frameNumber;
 }
 /* Effectue une lecture à l'adresse logique `laddress`.  */

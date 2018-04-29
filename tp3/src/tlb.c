@@ -105,9 +105,9 @@ static void tlb__add_entry (unsigned int page_number,
 		}
 	}
     //accesPageRemplace(page_number,sequenceAcces[TLB_NUM_ENTRIES - 1]);
-    tlb_entries[victim].page_number = page_number;
-    tlb_entries[victim].frame_number = frame_number;
-    tlb_entries[victim].readonly = readonly;
+    tlb_entries[pageVictime].page_number = page_number;
+    tlb_entries[pageVictime].frame_number = frame_number;
+    tlb_entries[pageVictime].readonly = readonly;
 	sequenceAcces[pageVictime] = 0x40000000;
 
 
