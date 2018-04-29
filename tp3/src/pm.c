@@ -51,8 +51,8 @@ void pm_download_page (unsigned int page_number, unsigned int frame_number)
 
 // Sauvegarde la frame spécifiée dans la page du backing store
 void pm_backup_page (unsigned int frame_number, unsigned int page_number)
-{
-  if (pt_dirty_p(page_number){//si la page est dirty on la backup
+{  
+  if (pt_dirty_p(page_number)){//si la page est dirty on la backup
 		backup_count++;
 
 	  //Met le pointeur au début de la page
@@ -76,7 +76,6 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 	        return;
 	  }
   }
-  
 }
 
 char pm_read (unsigned int physical_address)
