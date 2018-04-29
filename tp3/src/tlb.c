@@ -17,17 +17,30 @@ static FILE *tlb_log = NULL;
 //declare le tlb comme tlbentries 
 static struct tlb_entry tlb_entries[TLB_NUM_ENTRIES]; 
 
-static unsigned int sequenceAcces[TLB_NUM_ENTRIES];
+//https://stackoverflow.com/questions/23509348/how-to-set-all-elements-of-an-array-to-zero-or-any-same-value
+static unsigned int sequenceAcces[TLB_NUM_ENTRIES] = {0};
 
 static unsigned int tlb_hit_count = 0;
 static unsigned int tlb_miss_count = 0;
 static unsigned int tlb_mod_count = 0;
 
 
+/* Initialise le TLB, et indique où envoyer le log des accès.  */
+void tlb_init (FILE *log)
+{
+  for (int i = 0; i < TLB_NUM_ENTRIES; i++)
+    tlb_entries[i].frame_number = -1;
+  tlb_log = log;
+}
+
+/******************** ¡ NE RIEN CHANGER CI-DESSUS !  ******************/
+
+
+
 void accesPage(unsigned int page_number){
 
   int position_page;
-  for (position_page = 0; position_page < TLB_NUM_ENTRIES; ++position_page)
+  for (int position_page = 0; position_page < TLB_NUM_ENTRIES; ++position_page)
   {
     if (sequenceAcces[position_page] == page_number){
           break;
@@ -52,27 +65,28 @@ void algo_LRU(unsigned int page_number_new){
   accesPageRemplace(page_number_new,sequenceAcces[TLB_NUM_ENTRIES - 1 ]);
 }
 
-/* Initialise le TLB, et indique où envoyer le log des accès.  */
-void tlb_init (FILE *log)
-{
-  for (int i = 0; i < TLB_NUM_ENTRIES; i++)
-    tlb_entries[i].frame_number = -1;
-  tlb_log = log;
-}
-
-/******************** ¡ NE RIEN CHANGER CI-DESSUS !  ******************/
-
 /* Recherche dans le TLB.
  * Renvoie le `frame_number`, si trouvé, ou un nombre négatif sinon.  */
 static int tlb__lookup (unsigned int page_number, bool write)
 {
+  int frame_number = -1;
   for (int i = 0; i< TLB_NUM_ENTRIES; i++){
   	if (tlb_entries[i].page_number == page_number){
-  		//TODO stuff
-      accesPage(page_number);
-  	}
+		  //accesPage(page_number);
+		  frame_number = tlb_entries[i].frame_number;
+		  if (write){
+			 tlb_entries[i].readonly = 0;
+		  }else{
+			 tlb_entries[i].readonly = 1;
+		  }
+		  sequenceAcces[i] += 0x40000000;
+  	}else{
+		  sequenceAcces[i] >> 1;
+	}
   }
-  return -1;
+  
+  return frame_number;
+ 
 }
 
 /* Ajoute dans le TLB une entrée qui associe `frame_number` à
@@ -80,20 +94,21 @@ static int tlb__lookup (unsigned int page_number, bool write)
 static void tlb__add_entry (unsigned int page_number,
                             unsigned int frame_number, bool readonly)
 {
-    int pageVictime = sequenceAcces[TLB_NUM_ENTRIES - 1];
-	  int victim = 0;
-	for ( victim = 0; victim < TLB_NUM_ENTRIES; victim++){
+    //int pageVictime = sequenceAcces[TLB_NUM_ENTRIES - 1];
+	int pageVictime = 0;
+	int i = 0;
+	for ( i = 0; i < TLB_NUM_ENTRIES; i++){
     //cherche dans le tlb la page victime 
-    if (tlb_entries[victim].page_number == pageVictime){
-
-      break;
-    }
-		//TODO: stuff
+    //if (tlb_entries[i].page_number == pageVictime){
+		if (sequenceAcces[i] < sequenceAcces[pageVictime){
+			pageVictime = i ;
+		}
 	}
-    accesPageRemplace(page_number,sequenceAcces[TLB_NUM_ENTRIES - 1]);
+    //accesPageRemplace(page_number,sequenceAcces[TLB_NUM_ENTRIES - 1]);
     tlb_entries[victim].page_number = page_number;
     tlb_entries[victim].frame_number = frame_number;
     tlb_entries[victim].readonly = readonly;
+	sequenceAcces[pageVictime] = 0x40000000;
 
 
 }
