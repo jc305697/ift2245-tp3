@@ -36,7 +36,7 @@ void tlb_init (FILE *log)
 /******************** ¡ NE RIEN CHANGER CI-DESSUS !  ******************/
 
 
-
+/*
 void accesPage(unsigned int page_number){
 
   int position_page;
@@ -64,15 +64,16 @@ void accesPageRemplace(unsigned int page_number_new,unsigned int page_number_old
 void algo_LRU(unsigned int page_number_new){
   accesPageRemplace(page_number_new,sequenceAcces[TLB_NUM_ENTRIES - 1 ]);
 }
-
+*/
 /* Recherche dans le TLB.
  * Renvoie le `frame_number`, si trouvé, ou un nombre négatif sinon.  */
 static int tlb__lookup (unsigned int page_number, bool write)
 {
   int frame_number = -1;
   for (int i = 0; i< TLB_NUM_ENTRIES; i++){
-  	if (tlb_entries[i].page_number == page_number){
-		  //accesPage(page_number);
+  //Puisque commence tous avec -1, causait problème
+  	if (tlb_entries[i].page_number == page_number && tlb_entries[i].frame_number != -1){
+		  //TODO: CECI RETOURNE -1 MAIS DEVRAIT PAS SI DANS LE TLB
 		  frame_number = tlb_entries[i].frame_number;
 		  if (write){
 			 tlb_entries[i].readonly = 0;
@@ -84,7 +85,7 @@ static int tlb__lookup (unsigned int page_number, bool write)
 		  sequenceAcces[i] = sequenceAcces[i] >> 1;
 	}
   }
-  
+  //printf("Page number %d with frame number %d \n",page_number, frame_number);
   return frame_number;
  
 }

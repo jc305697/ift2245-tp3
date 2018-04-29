@@ -35,7 +35,6 @@ void pt_init (FILE *log)
  * Renvoie le `frame_number`, si valide, ou un nombre négatif sinon.  */
 static int pt__lookup (unsigned int page_number)
 {
-  // TODO: COMPLÉTER CETTE FONCTION.
   if (page_number < NUM_PAGES  && page_number >= 0 && page_table[page_number].valid){
      return page_table[page_number].frame_number;
   }

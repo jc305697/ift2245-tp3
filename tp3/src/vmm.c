@@ -83,7 +83,7 @@ void pageFault(unsigned int pageNumber, struct acces ancienFrame){
   accesFrame(frameAcceder);
 }
 */
-int getFrameLRU(int pageNumber){
+int getFrameLRU(){
 	int frameVictime = 0;
 	for (int i = 0; i< NUM_FRAMES; i++){
 		if (sequenceAcces[i]<sequenceAcces[frameVictime]){
@@ -103,29 +103,23 @@ void applyLRU(int frameNumber){
 	}
 }
 int trouverFrame(int pageNumber){
-	
-  unsigned int frameNumber = tlb_lookup (pageNumber,false);
-  
+    int frameNumber = tlb_lookup (pageNumber,false);
   if (frameNumber < 0){
 	//TLB Miss
-  	frameNumber = pt_lookup(pageNumber);
-  	if (frameNumber < 0){
-		//TODO: CHANGER ÇA POUR UN VRAI ALGO
-		 srand(time(0));
-         frameNumber = getFrameLRU(pageNumber);
-
-  		//Page Fault
-		pm_backup_page(frameNumber,pageNumber);
-		pt_unset_entry(pageNumber);
-		pm_download_page(pageNumber,frameNumber);
-		pt_set_entry(pageNumber,frameNumber);
-      //struct acces frameAcces = getLRU();
-      //frameNumber = frameAcces.numFrame;
-  		//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-      //pageFault(pageNumber,frameAcces);
-  		
-  	}
-	
+  	    frameNumber = pt_lookup(pageNumber);
+		if (frameNumber < 0){
+			frameNumber = getFrameLRU();
+			//Page Fault
+			pm_backup_page(frameNumber,pageNumber);
+			pt_unset_entry(pageNumber);
+			pm_download_page(pageNumber,frameNumber);
+			pt_set_entry(pageNumber,frameNumber);
+		  //struct acces frameAcces = getLRU();
+		  //frameNumber = frameAcces.numFrame;
+			//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
+		  //pageFault(pageNumber,frameAcces);
+			
+		}
 	tlb_add_entry(pageNumber,frameNumber,pt_readonly_p(pageNumber));
   }
   applyLRU(frameNumber);
@@ -159,7 +153,6 @@ void vmm_write (unsigned int laddress, char c)
   unsigned int pageNumber = laddress >> 8;
   
   int frameNumber = trouverFrame (pageNumber);
-  
   pt_set_dirty(pageNumber,true);
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
