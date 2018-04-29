@@ -24,6 +24,10 @@ bool pt_readonly_p (unsigned int page_number);
 /* Change l'accès en écriture de `page_number` selon `readonly`.  */
 void pt_set_readonly (unsigned int page_number, bool readonly);
 
+bool pt_dirty_p (unsigned int page_number);
+
+void pt_set_dirty(unsigned int page_number,bool dirty);
+
 void pt_clean (void);
 
 #endif

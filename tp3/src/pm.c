@@ -4,6 +4,7 @@
 
 #include "conf.h"
 #include "pm.h"
+#include "pt.h"
 
 static FILE *pm_backing_store;
 static FILE *pm_log;
@@ -53,28 +54,28 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 {
   backup_count++;
   
-  //Met le pointeur au début de la page
-    if (fseek(pm_backing_store, page_number * PAGE_FRAME_SIZE, SEEK_SET)){
-        printf("backup - fseek a retourné une erreur");
-        return;
+  if (pt_dirty_p(page_number)){//si la page est dirty on la backup
+	  //Met le pointeur au début de la page
+	    if (fseek(pm_backing_store, page_number * PAGE_FRAME_SIZE, SEEK_SET)){
+	        printf("backup - fseek a retourné une erreur");
+	        return;
+	  	}
+	  
+	  //Besoin +1? voir valgrind
+	  char buffer[PAGE_FRAME_SIZE + 1];
+	  memset(buffer, '\0', PAGE_FRAME_SIZE + 1);
+	  
+	  // Va chercher le contenu de la mémoire et le met dans buffer
+	  // Pour pouvoir y accéder plus tard
+	  unsigned int emplacement = frame_number * PAGE_FRAME_SIZE;
+	  strncpy(buffer,&pm_memory[emplacement],PAGE_FRAME_SIZE);
+	  
+	  //Écrit les données de buffer dans backing store
+	  if (fwrite(buffer, PAGE_FRAME_SIZE, 1, pm_backing_store) < 1){
+	        printf("backup - fwrite a retourné une erreur");
+	        return;
+	  }
   }
-  
-  //Besoin +1? voir valgrind
-  char buffer[PAGE_FRAME_SIZE + 1];
-  memset(buffer, '\0', PAGE_FRAME_SIZE + 1);
-  
-  // Va chercher le contenu de la mémoire et le met dans buffer
-  // Pour pouvoir y accéder plus tard
-  unsigned int emplacement = frame_number * PAGE_FRAME_SIZE;
-  strncpy(buffer,&pm_memory[emplacement],PAGE_FRAME_SIZE);
-  
-  //Écrit les données de buffer dans backing store
-  if (fwrite(buffer, PAGE_FRAME_SIZE, 1, pm_backing_store) < 1){
-        printf("backup - fwrite a retourné une erreur");
-        return;
-  }
-  
-
   
 }
 

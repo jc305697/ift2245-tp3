@@ -10,6 +10,7 @@ struct page
 {
   bool readonly : 1;
   bool valid : 1;
+  bool dirty: 1;
   unsigned int frame_number : 16;
 };
 
@@ -51,6 +52,7 @@ static void pt__set_entry (unsigned int page_number, unsigned int frame_number)
   {
     page_table[page_number].valid = true;
 	  page_table[page_number].readonly = true;	//Référence doit pas pouvoir être écrasée
+    page_table[page_number].dirty = false;
     page_table[page_number].frame_number = frame_number;
   }
 
@@ -64,10 +66,7 @@ void pt_unset_entry (unsigned int page_number)
   if (page_number < NUM_PAGES  && page_number >= 0)
   {
     page_table[page_number].valid=false;
-  }
-  
-
-  
+  } 
 }
 
 /* Renvoie si `page_number` est `readonly`.  */
@@ -84,8 +83,28 @@ bool pt_readonly_p (unsigned int page_number)
 /* Change l'accès en écriture de `page_number` selon `readonly`.  */
 void pt_set_readonly (unsigned int page_number, bool readonly)
 {
-  page_table[page_number].readonly = readonly;
+  if (page_number < NUM_PAGES  && page_number >= 0 && page_table[page_number].valid){
+    page_table[page_number].readonly = readonly;
+  }
+
 }
+
+bool pt_dirty_p (unsigned int page_number){
+
+  if (page_number < NUM_PAGES  && page_number >= 0 && page_table[page_number].valid){
+    return page_table[page_number].dirty;
+   }
+
+  return false;
+}
+
+void pt_set_dirty(unsigned int page_number,bool dirty){
+  if (page_number < NUM_PAGES  && page_number >= 0 && page_table[page_number].valid){
+    page_table[page_number].dirty = dirty;
+  }
+}
+
+
 
 
 

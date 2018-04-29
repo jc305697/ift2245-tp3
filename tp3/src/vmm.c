@@ -47,24 +47,20 @@ void accesFrame( struct acces frame){
 
 }
 
-/*void accesFrameRemplace(unsigned int frame_number_new,unsigned int frame_number_old){
-    accesFrame(frame_number_old);
-    sequenceAcces[0] = frame_number_new;
-  }*/
-
-/* void algo_LRU(unsigned int frame_number_new){
-    accesFrameRemplace(frame_number_new,sequenceAcces[NUM_PAGESN - 1 ]);
-}*/
 void pageFault(unsigned int pageNumber, struct acces ancienFrame){
+  
   unsigned int frameNumber = ancienFrame.numFrame;
+  //sauvegarde l'ancien frame dans le backing store et enleve de la page table
   pm_backup_page(frameNumber,ancienFrame.numPage);
   pt_unset_entry(ancienFrame.numPage);
-
+  //met contenu de la page dans le frame puis modifie entrée dans la pt
   pm_download_page(pageNumber, frameNumber);
   pt_set_entry(pageNumber, frameNumber);
+  //indique que j'ai acceder au frame
   struct acces frameAcceder = {.numFrame = frameNumber, .numPage = pageNumber};
   accesFrame(frameAcceder);
 }
+
 void vmm_init (FILE *log)
 {
   // Initialise le fichier de journal.
@@ -153,10 +149,11 @@ void vmm_write (unsigned int laddress, char c)
     accesPage = (struct acces) {.numPage = pageNumber, .numFrame = frameNumber};
 	  accesFrame(accesPage);
   }
-
+  pt_set_dirty(pageNumber,true);
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
   pm_write(addressPhysique, c);
+  
   //pas sure de ça puisque soit on ecrit sur le frame puis on quand on fait un 
   //swap de frame si on a ecrit sur le frame on va recopier sur le disque sinon pas besoin??
   //ou soit on ecrit directement sur le disque (less likely)
