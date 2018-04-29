@@ -19,7 +19,7 @@ struct acces {
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
-static struct acces sequenceAcces2[NUM_PAGES];
+//static struct acces sequenceAcces2[NUM_PAGES];
 static unsigned int sequenceAcces[NUM_FRAMES] = {0};
 
 void vmm_init (FILE *log)
@@ -43,7 +43,7 @@ static void vmm_log_command (FILE *out, const char *command,
 	     page, offset, frame, paddress);
 }
 
-
+/*
 struct acces getLRU(){
   return sequenceAcces[NUM_PAGES -1];
 }
@@ -82,19 +82,25 @@ void pageFault(unsigned int pageNumber, struct acces ancienFrame){
   struct acces frameAcceder = {.numFrame = frameNumber, .numPage = pageNumber};
   accesFrame(frameAcceder);
 }
+*/
 int getFrameLRU(int pageNumber){
 	int frameVictime = 0;
 	for (int i = 0; i< NUM_FRAMES; i++){
 		if (sequenceAcces[i]<sequenceAcces[frameVictime]){
 			frameVictime = i;
 		}
+	}
+	return frameVictime;
+}
+
+void applyLRU(int frameNumber){
+	for (int i = 0; i< NUM_FRAMES; i++){
 		if (i == frameNumber){
 			  sequenceAcces[i] += 0x40000000;
 		}else{
-			  sequenceAcces[i] >> 1;
+			  sequenceAcces[i] =  sequenceAcces[i] >> 1;
 		}
 	}
-	return frameVictime;
 }
 int trouverFrame(int pageNumber){
 	
@@ -107,6 +113,7 @@ int trouverFrame(int pageNumber){
 		//TODO: CHANGER ÇA POUR UN VRAI ALGO
 		 srand(time(0));
          frameNumber = getFrameLRU(pageNumber);
+
   		//Page Fault
 		pm_backup_page(frameNumber,pageNumber);
 		pt_unset_entry(pageNumber);
@@ -121,7 +128,7 @@ int trouverFrame(int pageNumber){
 	
 	tlb_add_entry(pageNumber,frameNumber,pt_readonly_p(pageNumber));
   }
-  
+  applyLRU(frameNumber);
   
   return frameNumber;
 }
