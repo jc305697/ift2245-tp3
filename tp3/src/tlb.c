@@ -81,7 +81,7 @@ static int tlb__lookup (unsigned int page_number, bool write)
 		  }
 		  sequenceAcces[i] += 0x40000000;
   	}else{
-		  sequenceAcces[i] >> 1;
+		  sequenceAcces[i] = sequenceAcces[i] >> 1;
 	}
   }
   
@@ -100,7 +100,7 @@ static void tlb__add_entry (unsigned int page_number,
 	for ( i = 0; i < TLB_NUM_ENTRIES; i++){
     //cherche dans le tlb la page victime 
     //if (tlb_entries[i].page_number == pageVictime){
-		if (sequenceAcces[i] < sequenceAcces[pageVictime){
+		if (sequenceAcces[i] < sequenceAcces[pageVictime]){
 			pageVictime = i ;
 		}
 	}
