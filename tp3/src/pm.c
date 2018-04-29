@@ -52,9 +52,10 @@ void pm_download_page (unsigned int page_number, unsigned int frame_number)
 // Sauvegarde la frame spécifiée dans la page du backing store
 void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 {
-  backup_count++;
+	if (pt_dirty_p(page_number)){//si la page est dirty on la backup
+  		backup_count++;
   
-  if (pt_dirty_p(page_number)){//si la page est dirty on la backup
+  
 	  //Met le pointeur au début de la page
 	    if (fseek(pm_backing_store, page_number * PAGE_FRAME_SIZE, SEEK_SET)){
 	        printf("backup - fseek a retourné une erreur");
@@ -75,7 +76,7 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 	        printf("backup - fwrite a retourné une erreur");
 	        return;
 	  }
-  }
+  	}
   
 }
 
