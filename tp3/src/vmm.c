@@ -13,15 +13,18 @@
 
 struct acces {
   unsigned int numPage;
-  unsigned int numFrame;
+   int numFrame;
+   bool vide;
+   unsigned int indice;
+
 };
 
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
 //static struct acces sequenceAcces2[NUM_PAGES];
-static unsigned int sequenceAcces[NUM_FRAMES] = {0};
-
+static struct acces sequenceAcces[NUM_FRAMES] = {{.indice=0}, {.vide = true},{.numPage=0},{.numFrame=0}};
+ static bool initialise = false;
 void vmm_init (FILE *log)
 {
   // Initialise le fichier de journal.
@@ -83,37 +86,51 @@ void pageFault(unsigned int pageNumber, struct acces ancienFrame){
   accesFrame(frameAcceder);
 }
 */
-int getFrameLRU(){
+void miseAjourSequenceAcces(int frameNumber,unsigned int pageNumber,bool vide){
+	sequenceAcces[frameNumber].numPage = pageNumber;
+	sequenceAcces[frameNumber].vide = vide;
+}
+struct acces getFrameLRU(){
 	int frameVictime = 0;
 	for (int i = 0; i< NUM_FRAMES; i++){
-		if (sequenceAcces[i]<sequenceAcces[frameVictime]){
+		if (sequenceAcces[i].indice<sequenceAcces[frameVictime].indice){
 			frameVictime = i;
 		}
 	}
-	return frameVictime;
+	return sequenceAcces[frameVictime];
 }
 
 void applyLRU(int frameNumber){
+	if (!initialise){
+		for (int i = 0; i < NUM_FRAMES; ++i)
+		{
+			sequenceAcces[i].numFrame  = i;
+		}
+		initialise =true;
+	}
 	for (int i = 0; i< NUM_FRAMES; i++){
 		if (i == frameNumber){
-			  sequenceAcces[i] += 0x40000000;
+			  sequenceAcces[i].indice += 0x40000000;
 		}else{
-			  sequenceAcces[i] =  sequenceAcces[i] >> 1;
+			  sequenceAcces[i].indice =  sequenceAcces[i].indice >> 1;
 		}
 	}
 }
 
-int getFrame(int pageNumber){
-	int frameNumber = getFrameLRU();
-	
-	pm_backup_page(frameNumber,pageNumber);
-	pt_unset_entry(pageNumber);
+int getFrame(unsigned int pageNumber){
+	struct acces frame = getFrameLRU();
+	int frameNumber = frame.numFrame;
+	if (frame.vide != false){
+		pm_backup_page(frameNumber,frame.numPage);
+		pt_unset_entry(pageNumber);
+	}
 	pm_download_page(pageNumber,frameNumber);
 	pt_set_entry(pageNumber,frameNumber);
+	miseAjourSequenceAcces(frame.numFrame,pageNumber,false);
 	return frameNumber;
 }
 
-int trouverFrame(int pageNumber){
+int trouverFrame(unsigned int pageNumber){
     int frameNumber = tlb_lookup (pageNumber,false);
   if (frameNumber < 0){
 	//TLB Miss
@@ -134,7 +151,7 @@ int trouverFrame(int pageNumber){
   return frameNumber;
 }
 
-int trouverFrameWrite(int pageNumber){
+int trouverFrameWrite(unsigned int pageNumber){
 	int frameNumber;
 	if (pt_readonly_p(pageNumber))
 	{
