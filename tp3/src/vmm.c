@@ -154,11 +154,6 @@ void vmm_write (unsigned int laddress, char c)
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
   pm_write(addressPhysique, c);
-  
-  //pas sure de ça puisque soit on ecrit sur le frame puis on quand on fait un 
-  //swap de frame si on a ecrit sur le frame on va recopier sur le disque sinon pas besoin??
-  //ou soit on ecrit directement sur le disque (less likely)
-
   vmm_log_command (stdout, "WRITING", laddress, pageNumber, frameNumber, offset, addressPhysique, c);
 }
 

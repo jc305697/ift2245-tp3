@@ -41,8 +41,10 @@ static int tlb__lookup (unsigned int page_number, bool write)
 {
   int frame_number = -1;
   for (int i = 0; i< TLB_NUM_ENTRIES; i++){
-  //Puisque commence tous avec -1, causait problème
-  	if (tlb_entries[i].page_number == page_number && tlb_entries[i].frame_number != -1){
+  
+    //Puisque commence tous avec -1, causait problème
+  	if (tlb_entries[i].page_number == page_number 
+	 && tlb_entries[i].frame_number != -1){
 		  frame_number = tlb_entries[i].frame_number;
 		  if (write && tlb_entries[i].readonly){
 			 printf("Cas géré par COPY ON WRITE");
@@ -62,25 +64,22 @@ static int tlb__lookup (unsigned int page_number, bool write)
 static void tlb__add_entry (unsigned int page_number,
                             unsigned int frame_number, bool readonly)
 {
-    //int pageVictime = sequenceAcces[TLB_NUM_ENTRIES - 1];
 	int pageVictime = 0;
 	int i = 0;
 	for ( i = 0; i < TLB_NUM_ENTRIES; i++){
-    //cherche dans le tlb la page victime 
-    //if (tlb_entries[i].page_number == pageVictime){
+    
+		//cherche dans le tlb la page victime 
 		if (sequenceAcces[i] < sequenceAcces[pageVictime]){
 			pageVictime = i ;
 		}
 	}
-    //accesPageRemplace(page_number,sequenceAcces[TLB_NUM_ENTRIES - 1]);
+
     tlb_entries[pageVictime].page_number = page_number;
     tlb_entries[pageVictime].frame_number = frame_number;
     tlb_entries[pageVictime].readonly = readonly;
 	sequenceAcces[pageVictime] = sequenceAcces[pageVictime] >> 1;
 	sequenceAcces[pageVictime] += 0x80000000;
-	//printf("ADDENTRY LRU :PAGE NUMBER %d FRAME NUMBER %d \n",page_number,frame_number);
-	//printBinaryValue2(sequenceAcces[pageVictime]);
-	//printf("\n");
+
 }
 
 /******************** ¡ NE RIEN CHANGER CI-DESSOUS !  ******************/
