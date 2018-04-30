@@ -33,8 +33,7 @@ void pm_download_page (unsigned int page_number, unsigned int frame_number)
         return;
   }
   
-  //Besoin +1? voir valgrind
-  char buffer[PAGE_FRAME_SIZE + 1];
+  char buffer[PAGE_FRAME_SIZE + 1];  //Char de fin
   memset(buffer, '0', PAGE_FRAME_SIZE + 1);
   
   //Lit les données et les met dans buffer
@@ -44,7 +43,7 @@ void pm_download_page (unsigned int page_number, unsigned int frame_number)
   }
   
   //Écrit dans la mémoire physique le contenu de notre buffer
-  // Pour pouvoir y accéder plus tard
+  //Pour pouvoir y accéder plus tard
   unsigned int emplacement = frame_number * PAGE_FRAME_SIZE;
   strncpy(&pm_memory[emplacement],buffer,PAGE_FRAME_SIZE);
 }
@@ -81,7 +80,6 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 
 char pm_read (unsigned int physical_address)
 {
-  //printf("%d \n", physical_address);
   //Unsigned peut être négatif ou en dehors de l'interval accepté
   if (physical_address < 0){
 	  printf("lecture - Ladresse physique est négative");
