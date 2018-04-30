@@ -12,15 +12,36 @@
 \section{Expérience}
 Durant ce travail qui semblait si simple, nous avons été confronté à plusieurs surprises innatendues. Par exemple, nous nous sommes rendus compte que nous ne gérions pas le cas d'une écriture sur une page qui est en readonly. Par la suite, nous avons essayer d'implanter le copy on write pour nous rendre compte que notre algorithme pour trouver le frame qui a été utilisé le moins récemment ne retournait que le numéro du frame donc nous avons dû modifier celui-ci afin de gérer ce cas pour se rendre compte que ça nous donnait de très mauvais résultat au niveau du tlb miss rate.
 
-\section {Problèmes rencontrées}
+\section {Difficultés}
+Unsigned Integer : Comparaison, problématique
 
-\section{Surprises}
+Commandes de style fseek, fwrite, fread, fputs
 
-\section{Choix que nous avons dû faire}
+Bien été
+Memset, commence à être habitué
+Strncpy
 
-\section{Options rejetés}
+Algorithme
+Au début : implémentation liste 
+Un peu compliqué _+ coûteux de toujours déplacer tous les éléments
+
+Ensuite implémentation binaire, shift
+Comment gérer l’ajout : utilisation du 100000000 pour 64 bits 
+Même algo LRU et PT
+
+Bons rendements
+
+Implémentation copy on write et gestion readonly
+
+\section{Résultats}
 
 
+\section{Algo et choix implantés}
+Backup juste si dirty
+Copie on write baisse les perfos (plus réaliste)
+\section{Améliorations possibles}
 
+
+\section{Fonctionnement du code}
 
 \end{document}
