@@ -102,18 +102,25 @@ void applyLRU(int frameNumber){
 		}
 	}
 }
+
+int getFrame(int pageNumber){
+	int frameNumber = getFrameLRU();
+	
+	pm_backup_page(frameNumber,pageNumber);
+	pt_unset_entry(pageNumber);
+	pm_download_page(pageNumber,frameNumber);
+	pt_set_entry(pageNumber,frameNumber);
+	return frameNumber;
+}
+
 int trouverFrame(int pageNumber){
     int frameNumber = tlb_lookup (pageNumber,false);
   if (frameNumber < 0){
 	//TLB Miss
   	    frameNumber = pt_lookup(pageNumber);
 		if (frameNumber < 0){
-			frameNumber = getFrameLRU();
 			//Page Fault
-			pm_backup_page(frameNumber,pageNumber);
-			pt_unset_entry(pageNumber);
-			pm_download_page(pageNumber,frameNumber);
-			pt_set_entry(pageNumber,frameNumber);
+			frameNumber = getFrame(pageNumber);
 		  //struct acces frameAcces = getLRU();
 		  //frameNumber = frameAcces.numFrame;
 			//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
@@ -125,6 +132,21 @@ int trouverFrame(int pageNumber){
   applyLRU(frameNumber);
   
   return frameNumber;
+}
+
+int trouverFrameWrite(int pageNumber){
+	int frameNumber;
+	if (pt_readonly_p(pageNumber))
+	{
+		frameNumber = getFrame(pageNumber);
+		tlb_add_entry(pageNumber,frameNumber,false);
+	}
+
+	else{
+		frameNumber = trouverFrame(pageNumber);
+	}
+
+	return frameNumber;
 }
 /* Effectue une lecture à l'adresse logique `laddress`.  */
 char vmm_read (unsigned int laddress)
@@ -152,7 +174,7 @@ void vmm_write (unsigned int laddress, char c)
   write_count++;
   unsigned int pageNumber = laddress >> 8;
   
-  int frameNumber = trouverFrame (pageNumber);
+  int frameNumber = trouverFrameWrite(pageNumber);
   pt_set_dirty(pageNumber,true);
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
