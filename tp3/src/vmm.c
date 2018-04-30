@@ -120,7 +120,7 @@ void applyLRU(int frameNumber){
 int getFrame(unsigned int pageNumber){
 	struct acces frame = getFrameLRU();
 	int frameNumber = frame.numFrame;
-	if (frame.vide != false){
+	if (frame.vide != true){
 		pm_backup_page(frameNumber,frame.numPage);
 		pt_unset_entry(pageNumber);
 	}
