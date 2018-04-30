@@ -22,7 +22,6 @@ struct acces {
 static unsigned int read_count = 0;
 static unsigned int write_count = 0;
 static FILE* vmm_log;
-//static struct acces sequenceAcces2[NUM_PAGES];
 static struct acces sequenceAcces[NUM_FRAMES] = {{.indice=0}, {.vide = true},{.numPage=0},{.numFrame=0}};
  static bool initialise = false;
 void vmm_init (FILE *log)
@@ -46,46 +45,6 @@ static void vmm_log_command (FILE *out, const char *command,
 	     page, offset, frame, paddress);
 }
 
-/*
-struct acces getLRU(){
-  return sequenceAcces[NUM_PAGES -1];
-}
-
-void accesFrame( struct acces frame){
-
-  int position_frame;
-  struct acces frameSpecifie;
-  for (position_frame = 0; position_frame < NUM_PAGES; ++position_frame)
-  {
-    if (sequenceAcces[position_frame].numFrame == frame.numFrame){
-          frameSpecifie = sequenceAcces[position_frame];
-          break;
-    }    
-  }
-  //decale les entrées jusqu'a l'ancienne position du frame_number
-  for (int i = 0; i < position_frame; ++i)
-  {
-    sequenceAcces[i+1] = sequenceAcces[i];
-  }
-  // le premier frame est le plus recemment acceder 
-  sequenceAcces[0] = frameSpecifie;
-
-}
-
-void pageFault(unsigned int pageNumber, struct acces ancienFrame){
-  
-  unsigned int frameNumber = ancienFrame.numFrame;
-  //sauvegarde l'ancien frame dans le backing store et enleve de la page table
-  pm_backup_page(frameNumber,ancienFrame.numPage);
-  pt_unset_entry(ancienFrame.numPage);
-  //met contenu de la page dans le frame puis modifie entrée dans la pt
-  pm_download_page(pageNumber, frameNumber);
-  pt_set_entry(pageNumber, frameNumber);
-  //indique que j'ai acceder au frame
-  struct acces frameAcceder = {.numFrame = frameNumber, .numPage = pageNumber};
-  accesFrame(frameAcceder);
-}
-*/
 void miseAjourSequenceAcces(int frameNumber,unsigned int pageNumber,bool vide){
 	sequenceAcces[frameNumber].numPage = pageNumber;
 	sequenceAcces[frameNumber].vide = vide;
@@ -106,42 +65,40 @@ void applyLRU(int frameNumber){
 		{
 			sequenceAcces[i].numFrame  = i;
 		}
-		initialise =true;
+		initialise = true;
 	}
 	for (int i = 0; i< NUM_FRAMES; i++){
 		if (i == frameNumber){
-			  sequenceAcces[i].indice += 0x40000000;
+			  sequenceAcces[i].indice =  sequenceAcces[i].indice >> 1;
+			  sequenceAcces[i].indice += 0x80000000;
 		}else{
 			  sequenceAcces[i].indice =  sequenceAcces[i].indice >> 1;
 		}
 	}
 }
 
-int getFrame(unsigned int pageNumber){
+int getFrame(unsigned int pageNumber, bool readonly){
 	struct acces frame = getFrameLRU();
+	applyLRU(frame.numFrame);
 	int frameNumber = frame.numFrame;
 	if (frame.vide != true){
 		pm_backup_page(frameNumber,frame.numPage);
-		pt_unset_entry(pageNumber);
+		pt_unset_entry(frame.numPage);
 	}
 	pm_download_page(pageNumber,frameNumber);
-	pt_set_entry(pageNumber,frameNumber);
-	miseAjourSequenceAcces(frame.numFrame,pageNumber,false);
+	pt_set_entry(pageNumber,frameNumber, readonly);
+	miseAjourSequenceAcces(frameNumber,pageNumber,false);
 	return frameNumber;
 }
 
 int trouverFrame(unsigned int pageNumber){
-    int frameNumber = tlb_lookup (pageNumber,false);
+  int frameNumber = tlb_lookup (pageNumber,false);
   if (frameNumber < 0){
 	//TLB Miss
   	    frameNumber = pt_lookup(pageNumber);
 		if (frameNumber < 0){
 			//Page Fault
-			frameNumber = getFrame(pageNumber);
-		  //struct acces frameAcces = getLRU();
-		  //frameNumber = frameAcces.numFrame;
-			//frameNumber = 10; //Changer ceci, comment trouve une frame dispo?
-		  //pageFault(pageNumber,frameAcces);
+			frameNumber = getFrame(pageNumber,false);
 			
 		}
 	tlb_add_entry(pageNumber,frameNumber,pt_readonly_p(pageNumber));
@@ -153,9 +110,10 @@ int trouverFrame(unsigned int pageNumber){
 
 int trouverFrameWrite(unsigned int pageNumber){
 	int frameNumber;
+	//Quand on veut écrire sur un readonly, on doit appliquer le COW
 	if (pt_readonly_p(pageNumber))
 	{
-		frameNumber = getFrame(pageNumber);
+		frameNumber = getFrame(pageNumber, true);
 		tlb_add_entry(pageNumber,frameNumber,false);
 	}
 

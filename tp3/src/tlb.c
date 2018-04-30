@@ -35,36 +35,6 @@ void tlb_init (FILE *log)
 
 /******************** ¡ NE RIEN CHANGER CI-DESSUS !  ******************/
 
-
-/*
-void accesPage(unsigned int page_number){
-
-  int position_page;
-  for (int position_page = 0; position_page < TLB_NUM_ENTRIES; ++position_page)
-  {
-    if (sequenceAcces[position_page] == page_number){
-          break;
-    }    
-  }
-  //decale les entrées jusqu'a l'ancienne position du numero de la page
-  for (int i = 0; i < position_page; ++i)
-  {
-    sequenceAcces[i+1] = sequenceAcces[i];
-  }
-  // la premiere page est la plus recemment acceder 
-  sequenceAcces[0] = page_number;
-
-}
-
-void accesPageRemplace(unsigned int page_number_new,unsigned int page_number_old){
-  accesPage(page_number_old);
-  sequenceAcces[0] = page_number_new;
-}
-
-void algo_LRU(unsigned int page_number_new){
-  accesPageRemplace(page_number_new,sequenceAcces[TLB_NUM_ENTRIES - 1 ]);
-}
-*/
 /* Recherche dans le TLB.
  * Renvoie le `frame_number`, si trouvé, ou un nombre négatif sinon.  */
 static int tlb__lookup (unsigned int page_number, bool write)
@@ -73,19 +43,16 @@ static int tlb__lookup (unsigned int page_number, bool write)
   for (int i = 0; i< TLB_NUM_ENTRIES; i++){
   //Puisque commence tous avec -1, causait problème
   	if (tlb_entries[i].page_number == page_number && tlb_entries[i].frame_number != -1){
-		  //TODO: CECI RETOURNE -1 MAIS DEVRAIT PAS SI DANS LE TLB
 		  frame_number = tlb_entries[i].frame_number;
-		  if (write){
-			 tlb_entries[i].readonly = 0;
-		  }else{
-			 tlb_entries[i].readonly = 1;
+		  if (write && tlb_entries[i].readonly){
+			 printf("Cas géré par COPY ON WRITE");
 		  }
-		  sequenceAcces[i] += 0x40000000;
-  	}else{
+		  sequenceAcces[i] = sequenceAcces[i] >> 1;
+		  sequenceAcces[i] += 0x80000000;
+	}else{
 		  sequenceAcces[i] = sequenceAcces[i] >> 1;
 	}
   }
-  //printf("Page number %d with frame number %d \n",page_number, frame_number);
   return frame_number;
  
 }
@@ -109,9 +76,11 @@ static void tlb__add_entry (unsigned int page_number,
     tlb_entries[pageVictime].page_number = page_number;
     tlb_entries[pageVictime].frame_number = frame_number;
     tlb_entries[pageVictime].readonly = readonly;
-	sequenceAcces[pageVictime] = 0x40000000;
-
-
+	sequenceAcces[pageVictime] = sequenceAcces[pageVictime] >> 1;
+	sequenceAcces[pageVictime] += 0x80000000;
+	//printf("ADDENTRY LRU :PAGE NUMBER %d FRAME NUMBER %d \n",page_number,frame_number);
+	//printBinaryValue2(sequenceAcces[pageVictime]);
+	//printf("\n");
 }
 
 /******************** ¡ NE RIEN CHANGER CI-DESSOUS !  ******************/

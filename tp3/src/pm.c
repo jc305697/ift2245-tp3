@@ -35,9 +35,9 @@ void pm_download_page (unsigned int page_number, unsigned int frame_number)
   
   //Besoin +1? voir valgrind
   char buffer[PAGE_FRAME_SIZE + 1];
-  memset(buffer, '\0', PAGE_FRAME_SIZE + 1);
+  memset(buffer, '0', PAGE_FRAME_SIZE + 1);
+  
   //Lit les données et les met dans buffer
-  //On a un élément de taille FRAME
   if (fread(buffer, PAGE_FRAME_SIZE, 1, pm_backing_store) < 1){
         printf("fread a retourné une erreur");
         return;
@@ -63,7 +63,7 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 	  
 	  //Besoin +1? voir valgrind
 	  char buffer[PAGE_FRAME_SIZE + 1];
-	  memset(buffer, '\0', PAGE_FRAME_SIZE + 1);
+	  memset(buffer, '0', PAGE_FRAME_SIZE + 1);
 	  
 	  // Va chercher le contenu de la mémoire et le met dans buffer
 	  // Pour pouvoir y accéder plus tard
@@ -75,12 +75,13 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 	        printf("backup - fwrite a retourné une erreur");
 	        return;
 	  }
+	  pt_set_dirty(page_number,false);
   }
 }
 
 char pm_read (unsigned int physical_address)
 {
-  printf("%d \n", physical_address);
+  //printf("%d \n", physical_address);
   //Unsigned peut être négatif ou en dehors de l'interval accepté
   if (physical_address < 0){
 	  printf("lecture - Ladresse physique est négative");
