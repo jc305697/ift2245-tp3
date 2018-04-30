@@ -4,7 +4,7 @@ import random
 def main():
     nbTests = 5
     for i in range(nbTests):
-        f = open("testTPOS" + str(i) + ".txt", "w+")
+        f = open("testTPOS" + str(i) + ".in", "w+")
         for j in range(500):
             adresse = random.randint(0, 65535)
             mychar = chr(randrange(32, 127))
@@ -13,7 +13,7 @@ def main():
                 result = op + str(adresse)
             else:
                 op = "W"
-                result = op + "'" + mychar + "'"
+                result = op + str(adresse) + "'" + mychar + "'"
             f.write(result + ";\n")
         f.close()
 
