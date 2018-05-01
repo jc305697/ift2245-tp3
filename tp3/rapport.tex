@@ -56,4 +56,6 @@ Nous pourrions implanter une table de page multi-niveau ou nous pourrions implan
 \section{Fonctionnement du code}
 
 Pour l'implémentation du "copy on write" nous allons obtenir un frame puis nous sauvegardons son contenu en mémoire. Par la suite nous allons chercher le contenu de la page sur laquelle nous voulionns écrire mais qui était read only puis nous téléchargeons le contenu de celle-ci dans le frame que nous avions obtenu puis nous allons modifier la table de page. Pour la sauvegarde en mémoire nous n'écrivons le contenu des frames en mémoires que s'ils ont été modifiées donc s'ils sont "dirty". 
+\par 
+Pour les algorithmes d'ordonnancement nous utilisons les bits shifts afin savoir qu'elle frame a la plus grande durées d'inutilisation depuis sa dernière utilisation.
 \end{document}
