@@ -6,6 +6,7 @@
 
 /* Initialise le TLB, et indique où envoyer le log des accès.  */
 void tlb_init (FILE *log);
+void shiftOthers (unsigned int page_number);
 
 /* Recherche dans le TLB.
  * Renvoie le `frame_number`, si trouvé et l'accès est valide,

@@ -49,6 +49,8 @@ void miseAjourSequenceAcces(int frameNumber,unsigned int pageNumber,bool vide){
 	sequenceAcces[frameNumber].numPage = pageNumber;
 	sequenceAcces[frameNumber].vide = vide;
 }
+
+/* Va chercher la valeur la plus petite*/
 struct acces getFrameLRU(){
 	int frameVictime = 0;
 	for (int i = 0; i< NUM_FRAMES; i++){
@@ -59,6 +61,7 @@ struct acces getFrameLRU(){
 	return sequenceAcces[frameVictime];
 }
 
+/* Loop et shift les bit, initialise la premiere fois*/
 void applyLRU(int frameNumber){
 	if (!initialise){
 		for (int i = 0; i < NUM_FRAMES; ++i)
@@ -77,9 +80,10 @@ void applyLRU(int frameNumber){
 	}
 }
 
+/* Obtient prochaine frame via l'algorithme
+Sauvegarde l'ancienne et load la nouvelle */
 int getFrame(unsigned int pageNumber, bool readonly){
 	struct acces frame = getFrameLRU();
-	applyLRU(frame.numFrame);
 	int frameNumber = frame.numFrame;
 	if (frame.vide != true){
 		pm_backup_page(frameNumber,frame.numPage);
@@ -92,6 +96,7 @@ int getFrame(unsigned int pageNumber, bool readonly){
 	return frameNumber;
 }
 
+/* Verifie dans le TLB puis dans la PT et finalement chercher une victime*/
 int trouverFrame(unsigned int pageNumber){
   int frameNumber = tlb_lookup (pageNumber,false);
   if (frameNumber < 0){
@@ -103,12 +108,12 @@ int trouverFrame(unsigned int pageNumber){
 			
 		}
 	tlb_add_entry(pageNumber,frameNumber,pt_readonly_p(pageNumber));
-  }
-  applyLRU(frameNumber);
-  
+	shiftOthers(pageNumber);
+  }  
   return frameNumber;
 }
 
+/* Override kindof pour la version avec écriture pour le COW*/
 int trouverFrameWrite(unsigned int pageNumber){
 	int frameNumber;
 	//Quand on veut écrire sur un readonly, on doit appliquer le COW
@@ -116,6 +121,7 @@ int trouverFrameWrite(unsigned int pageNumber){
 	{
 		frameNumber = getFrame(pageNumber, true);
 		tlb_add_entry(pageNumber,frameNumber,false);
+		shiftOthers(pageNumber);
 	}
 
 	else{
@@ -135,7 +141,7 @@ char vmm_read (unsigned int laddress)
   unsigned int pageNumber = laddress >> 8;
 
   int frameNumber = trouverFrame (pageNumber);
-  
+  applyLRU(frameNumber);
   //Concaténation à 0000000011111111
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;
@@ -151,6 +157,7 @@ void vmm_write (unsigned int laddress, char c)
   unsigned int pageNumber = laddress >> 8;
   
   int frameNumber = trouverFrameWrite(pageNumber);
+  applyLRU(frameNumber);
   pt_set_dirty(pageNumber,true);
   int offset = laddress & 255;
   int addressPhysique = (frameNumber * PAGE_FRAME_SIZE) + offset;

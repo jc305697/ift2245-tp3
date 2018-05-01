@@ -46,9 +46,12 @@ static int tlb__lookup (unsigned int page_number, bool write)
   	if (tlb_entries[i].page_number == page_number 
 	 && tlb_entries[i].frame_number != -1){
 		  frame_number = tlb_entries[i].frame_number;
+		  
 		  if (write && tlb_entries[i].readonly){
 			 printf("Cas géré par COPY ON WRITE");
 		  }
+		  
+		  //Shift et ajoute 1000...
 		  sequenceAcces[i] = sequenceAcces[i] >> 1;
 		  sequenceAcces[i] += 0x80000000;
 	}else{
@@ -57,6 +60,13 @@ static int tlb__lookup (unsigned int page_number, bool write)
   }
   return frame_number;
  
+}
+void shiftOthers (unsigned int page_number){
+	for (int i = 0; i< TLB_NUM_ENTRIES; i++){
+		if (tlb_entries[i].page_number != page_number ){
+			sequenceAcces[i] = sequenceAcces[i] >> 1;
+		}
+	}
 }
 
 /* Ajoute dans le TLB une entrée qui associe `frame_number` à
@@ -77,8 +87,10 @@ static void tlb__add_entry (unsigned int page_number,
     tlb_entries[pageVictime].page_number = page_number;
     tlb_entries[pageVictime].frame_number = frame_number;
     tlb_entries[pageVictime].readonly = readonly;
-	sequenceAcces[pageVictime] = sequenceAcces[pageVictime] >> 1;
-	sequenceAcces[pageVictime] += 0x80000000;
+	
+	//Acces recent
+	//sequenceAcces[pageVictime] = sequenceAcces[pageVictime] >> 1;
+	sequenceAcces[pageVictime] = 0x80000000;
 
 }
 

@@ -60,7 +60,6 @@ void pm_backup_page (unsigned int frame_number, unsigned int page_number)
 	        return;
 	  	}
 	  
-	  //Besoin +1? voir valgrind
 	  char buffer[PAGE_FRAME_SIZE + 1];
 	  memset(buffer, '0', PAGE_FRAME_SIZE + 1);
 	  
@@ -84,7 +83,7 @@ char pm_read (unsigned int physical_address)
   if (physical_address < 0){
 	  printf("lecture - Ladresse physique est négative");
   }
-  else if (physical_address >= PHYSICAL_MEMORY_SIZE){
+  else if ((int)physical_address >= PHYSICAL_MEMORY_SIZE){
 	  printf("lecture - Ladresse physique est out of bound");
   }else{
 	  read_count++;
@@ -99,7 +98,7 @@ void pm_write (unsigned int physical_address, char c)
   if (physical_address < 0){
 	  printf("écriture - Ladresse physique est négative");
   }  
-  else if (physical_address >= PHYSICAL_MEMORY_SIZE){
+  else if ((int)physical_address >= PHYSICAL_MEMORY_SIZE){
 	  printf("écriture - Ladresse physique est out of bound");
   }else{
       write_count++;
