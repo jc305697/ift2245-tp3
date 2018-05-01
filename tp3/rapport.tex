@@ -11,12 +11,12 @@
 \maketitle
 
 \section{Expérience}
-Arrivé à ce travail, nous pensions être rendu des pros de gestion de mémoire et de programmation en C. Cependant, nous avons été confronté à des difficultés différentes, principalement reliée au concept de TLB et de page de table. Nous avions une compréhension de ces concepts plutôt en surface, donc les implémenter a été difficile. Après une première écriture des éléments clés du programme, nous avions plusieurs incohérence : backup de la même page qui doit être loadée, écriture sur une page readonly, mauvaise utilisation des fonctions données à notre disposition, incapacité de récupérer la page à partir d’une frame, etc. Nous avons utilisé les statistiques obtenues (principalement tlb miss) comme indicatif nous permettant de savoir si nous étions dans la bonne direction, le score de 100% étant nécessairement mauvais.
+Arrivé à ce travail, nous pensions être rendu des pros de gestion de mémoire et de programmation en C. Cependant, nous avons été confronté à des difficultés différentes, principalement reliée au concept de TLB et de page de table. Nous avions une compréhension de ces concepts plutôt en surface, donc les implémenter a été difficile. Après une première écriture des éléments clés du programme, nous avions plusieurs incohérence : backup de la même page qui doit être loadée, écriture sur une page readonly, mauvaise utilisation des fonctions données à notre disposition, incapacité de récupérer la page à partir d’une frame, etc. Nous avons utilisé les statistiques obtenues (principalement tlb miss) comme indicatif nous permettant de savoir si nous étions dans la bonne direction, le score de 100\% étant nécessairement mauvais.
 
 
 \section {Difficultés}
 \par
-Unsigned Integer : Une première difficulté a été les UInt qui étaient utilisés dans certaines parties du programme. N’ayant jamais vraiment travaillé avec ces éléments, nous avions un bug où nous faisions une comparaison if UInt < 0. Il a fallut rechercher l’origine du bug pour comprendre que cette ligne était toujours fausse. Une recherche sur google nous a ensuite expliqué pourquoi. 
+Unsigned Integer : Une première difficulté a été les UInt qui étaient utilisés dans certaines parties du programme. N’ayant jamais vraiment travaillé avec ces éléments, nous avions un bug où nous faisions une comparaison if UInt \textless  0. Il a fallut rechercher l’origine du bug pour comprendre que cette ligne était toujours fausse. Une recherche sur google nous a ensuite expliqué pourquoi. 
 
 \par
 Compréhension des fichiers : Même si les fichiers peuvent sembler intuitif de par leur nom, il a été difficile au début de comprendre le flow de l’application (qui appelle qui) et comment le contrôler. Nous avons premièrement codé le TLB et la PT, donc nous avions de la difficulté à faire le lien avec PM et VMM. 
@@ -45,10 +45,10 @@ Adresse Logique : Faire la conversion entre adresse logique et physique s’est 
 Afin de vraiment tester notre code, nous avons créé plusieurs tests variés. Ainsi, nous avons créé un dossier ‘Extra’ contenant plus de tests. Les tests ont été réalisé avec  NUM\_FRAMES = 3 et  TLB\_NUM\_ENTRIES = 3
 
 Command.in
-1 TLB Miss (la première écriture) et 1 seul PF -> Normal, on utilise seulement 1 page pour toute l’exécution
+1 TLB Miss (la première écriture) et 1 seul PF $\rightarrow $ Normal, on utilise seulement 1 page pour toute l’exécution
 
 worstCase.in
-98.9\% TLB Miss et 90 PF ->Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
+98.9\% TLB Miss et 90 PF $\rightarrow $ Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
 
 TLBLRU.in
 Permet de voir que le LRU fonctionne bien via un test simple (frame 3 remplace 1 et 4 remplace 2)
@@ -56,7 +56,7 @@ Permet de voir que le LRU fonctionne bien via un test simple (frame 3 remplace 1
 
 Tests réalisés avec NUM\_FRAMES = 32 et   TLB\_NUM\_ENTRIES = 8
 
-bestCase.in ->!Attention va écrire par dessus le backingstore!
+bestCase.in $\rightarrow $ !Attention va écrire par dessus le backingstore!
 Écrit de façon séquentiel, TLB Miss de 0.4\%.
 
 normalCase.in
@@ -70,10 +70,10 @@ Finalement, nous nous sommes inspirés d’une implémentation expliquée dans l
 
 La difficulté de l’algorithme était de déterminer la grandeur du chiffre. Nous voulions que ça fonctionne pour les architecture 32 bits et 64 bits. Nous avons finalement décidé d’implémenter le 32 pour qu’il soit compatible avec les deux (via l’utilisation de 0x80000000). Au départ, nous utilisions seulement un unsigned int, mais par la suite nous avons eu besoin de plus d’informations relatives aux éléments, donc nous avons transformé notre paramètre en une structure contenant plusieurs attributs (framenumb,pagenumb,valid,UInt).
 
-Il est à noter que l’algorithme pour le TLB et pour le swapping des frames (paging) est le même, qui est LRU.
+Il est à noter que l’algorithme pour le TLB et pour le swapping des frames (paging) est le même  soit un algorithme  LRU.
 
 \par
-Nous avons décider de faire une implémentation qui est le plus possible réaliste. Ainsi, nous ne copions le contenu des frames (backup) que lorsque nous voulons écrire sur celles-ci (dirty). Cela permet de minimmiser le nombre d’opérations IO (celles-ci sont généralement les opérations les plus coûteuses sur de vrais systèmes). 
+Nous avons décider de faire une implémentation qui est la plus réaliste possible . Ainsi, nous ne copions le contenu des frames (backup) que lorsque nous voulons écrire sur celles-ci (dirty). Cela permet de minimmiser le nombre d’opérations IO (celles-ci sont généralement les opérations les plus coûteuses sur de vrais systèmes). 
 
 \par
 Copy on write : Nous avons jugé qu'il serait pertinent d'utiliser une stratégie permettant de gérer l’écriture sur une page readonly. C’est à ce moment que nous nous sommes rendus compte que nous devions modifier notre structure initiale du LRU pour inclure plus d’éléments. Plusieurs difficultés sont apparues, car nous n’étions pas certain comment gérer la présence de 2 frames pointant vers la même page dans la table de pages. Après avoir lu en ligne et révisé les notes, il n’était pas clair comment agir avec ce cas-là. Nous avons donc fait au meilleur de nos connaissances pour l’implémentation de cette variante. De façon surprenante, après avoir ajouté cette gestion des bugs readonly, nous avons amélioré nos statistiques sur tous les tests.
