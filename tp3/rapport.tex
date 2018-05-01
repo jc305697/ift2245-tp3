@@ -11,51 +11,95 @@
 \maketitle
 
 \section{Expérience}
-Durant ce travail qui semblait si simple, nous avons été confronté à plusieurs surprises innatendues. Par exemple, nous nous sommes rendus compte que nous ne gérions pas le cas d'une écriture sur une page qui est en readonly. Par la suite, nous avons essayer d'implanter le copy on write pour nous rendre compte que notre algorithme pour trouver le frame qui a été utilisé le moins récemment ne retournait que le numéro du frame donc nous avons dû modifier celui-ci afin de gérer ce cas pour se rendre compte que ça nous donnait de très mauvais résultat au niveau du tlb miss rate. Nous avons du faire quelques modifications afin d'obtenir un taux de raté pour le tlb inférieur à celui que nous obtenions précedemment.
+Arrivé à ce travail, nous pensions être rendu des pros de gestion de mémoire et de programmation en C. Cependant, nous avons été confronté à des difficultés différentes, principalement reliée au concept de TLB et de page de table. Nous avions une compréhension de ces concepts plutôt en surface, donc les implémenter a été difficile. Après une première écriture des éléments clés du programme, nous avions plusieurs incohérence : backup de la même page qui doit être loadée, écriture sur une page readonly, mauvaise utilisation des fonctions données à notre disposition, incapacité de récupérer la page à partir d’une frame, etc. Nous avons utilisé les statistiques obtenues (principalement tlb miss) comme indicatif nous permettant de savoir si nous étions dans la bonne direction, le score de 100% étant nécessairement mauvais.
+
 
 \section {Difficultés}
-Nous avons rencontrées plusiseurs  problèmes. Nous avions au déput fait une implémentation d'un algorithme LRU, mais celle-ci connaissait certains problèmes au niveau de l'imlpantation qui ne pouvait être résolu que par une modification en profondeur de l'implantation. Nous avons donc choisi de faire une autre implantation d'un algortithme LRU qui après une bonne séance de déboguage celle- ci fonctionnait comme elle était censé  le faire ce qui nous a permis de nous attaquer à un problème que nous avions perdu de vue soit l'écriture sur un frame qui est en "view-only".
 \par
- Bien qu'il est de notre avis que les consignes sont floues à ce sujet nous avons juger qu'il serait pertinent d'utiliser une stratégie basé sur le principe du copy on write et ce dans les limites que nous impose notre implémentation et dans un cadre plus général les limites du projet.  Nous avons eu des problèmes avec l'implémentation du "copy on write" qui est inclus entre la spécification du statut des pages. Par exemple, nous nous sommes rendus compte que nous ne possédions pas les informations nécessaires avec notre implémentation du LRU pour faire l'allocation des frames aux pages logiques donc nous avons dû modifier notre algorithme afin qu'il travaille avec des struct au lieu de unsigned int.  Nous avons par la suite du séparer une de nos fonction en 3 fonctions séparés afin de pouvoir implanter un version crédible de "copy on write" et d'éviter une redondance de code.  
-\par
+Unsigned Integer : Une première difficulté a été les UInt qui étaient utilisés dans certaines parties du programme. N’ayant jamais vraiment travaillé avec ces éléments, nous avions un bug où nous faisions une comparaison if UInt < 0. Il a fallut rechercher l’origine du bug pour comprendre que cette ligne était toujours fausse. Une recherche sur google nous a ensuite expliqué pourquoi. 
 
-Par la suite nous nous sommes rendu compte que lorsque nous écrivions dans le backing store nous écrivions des caractères null ce qui faisait en sorte que le fichier texte devenait instable. 
 \par
-Nous avons aussi eu des problèmes lorsque nous avons tenté d'essayer d'implanter un générateur d'opérations avec des adresses générés aléatoirement afin de pouvoir tester notre programme sur un nombre d'accès conséquent. 
-\par
-Nous ne pouvions plus à un certain moment déboguer à l'aide d'impression sur la ligne de commande pour une raison qui nous reste encore inconnue à ce jour ce qui semble être une tendance lorsque nous travaillons en C. 
-\par
-Nous avons aussi  eu des problèmes qui étaient causé par de petites erreurs, mais qui nous ont pris du temps à trouver la source de ces erreurs. Par exemple, nous avions un if qui avait comme condition qu'un unsigned integer soirt < 0 ce qui bien sûre n'arrivait jamais.
-\par
-%Unsigned Integer : Comparaison, problématique
-%Commandes de style fseek, fwrite, fread, fputs
-%Bien été
-%Memset, commence à être habitué
-%Strncpy
-%Algorithme
-%Au début : implémentation liste 
-%Un peu compliqué  et  coûteux de toujours déplacer tous les éléments
-%Ensuite implémentation binaire, shift
-%Comment gérer l’ajout : utilisation du 100000000 pour 64 bits 
-%Même algo LRU et PT
-%Bons rendements
-%Implémentation copy on write et gestion readonly
+Compréhension des fichiers : Même si les fichiers peuvent sembler intuitif de par leur nom, il a été difficile au début de comprendre le flow de l’application (qui appelle qui) et comment le contrôler. Nous avons premièrement codé le TLB et la PT, donc nous avions de la difficulté à faire le lien avec PM et VMM. 
 
+\par
+Bugs variés : À un moment donné, lorsque nous écrivions dans le backing store, nous ajoutions des caractères NULL ce qui faisait en sorte que le fichier texte devenait instable. Plus tard, nous ne pouvions déboguer via l’impression de la ligne de commande pour une raison qui nous reste encore inconnue à ce jour ce qui semble être une tendance lorsque nous travaillons en C. Un autre problème a été que GDB ne nous laissait pas mettre de breakpoint, donc nous n’avons jamais pu débogguer ligne par ligne. Nous avons dû effectué des printf sans fin.
+
+\par
+Tests : Finalement, nous avons voulu être fancy et nous créer un script qui génère automatiquement des opérations avec des adresses aléatoires. Cependant, nous avons eu quelques bugs dans le code et ça a pris plus de temps que nous pensions. 
+
+\section {Bons coups}
+\par
+Commandes Stream : Chaque TP nous découvrons de nouvelles commandes, donc nous étions plus à même de savoir ce que nous devions chercher. Nous hésitions cependant entre fwrite et fputs. Après une recherche rapide, les deux utilisations semblaient acceptées. Nous avons également trouvé lors de notre recherche fseek et fread que nous avons utilisé.
+
+
+\par
+Memset & Strncpy : Nous les avions utilisés dans les TPs passés donc nous avons pu rapidement créer un buffer et l’utiliser pour transférer les éléments en mémoire.
+
+
+\par
+Adresse Logique : Faire la conversion entre adresse logique et physique s’est bien passé, car nous avions bien étudié pour l’examen et étions des pros des offset et de la séparation de la plage mémoire.
+
+
+\par
 \section{Résultats}
-Notre algorithme obtient des résultalts relativement satisfaisant.
+Afin de vraiment tester notre code, nous avons créé plusieurs tests variés. Ainsi, nous avons créé un dossier ‘Extra’ contenant plus de tests.
+
+
+Tests réalisés avec  NUM_FRAMES = 3 et  TLB_NUM_ENTRIES = 3
+
+Command.in
+1 TLB Miss (la première écriture) et 1 seul PF → Normal, on utilise seulement 1 page pour toute l’exécution
+
+worstCase.in
+98.9% TLB Miss et 90 PF → Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
+
+TLBLRU.in
+Permet de voir que le LRU fonctionne bien via un test simple (frame 3 remplace 1 et 4 remplace 2)
+
+
+Tests réalisés avec NUM_FRAMES = 32 et   TLB_NUM_ENTRIES = 8
+
+bestCase.in → !Attention va écrire par dessus le backingstore!
+Écrit de façon séquentiel, TLB Miss de 0.4%.
+
+normalCase.in
+Opérations aléatoires avec les valeurs possibles réduits à 3000, TLB Miss de 70%. On suppose le haut pourcentage, car on accède aux pages de façon aléatoire, mais que les valeurs sont plus restreintes que worstcase.in
 
 \section{Algo et choix implantés}
-Nous avons décider d'essayer de faire une implémentation qui serait la plus réaliste possible donc nous avons fait en sorte que nous ne copions le contenu des frames que lorsque nous aurions écris sur ceux-ci donc lorsque ceux-ci sont dirty afin de faire en sorte de minimmiser le nombre d'IO operation au total puisque ces dernières sont les opérations les plus coûteuses sur les systèmes réels. 
 \par
-Nous avons aussi choisi de faire un algorithme pour les écritures sur les frames qui sont readonly qui s'inspire du "copy on write" afin d'avoir une implémentation la plus proche de la réalité que possible même si ça nous a apporté plusieurs difficultés comme mentionné  plus haut dans ce rapport et que ça a un certain impact sur les performances de notre implentation.
-\par 
-Nous avions au début décidé d'implanté un algortihme LRU qui servait d'une liste qui se trouvait dans un tableau, mais nous avons décidé d'abandonner cette idée après avoir rencontré des difficultés comme mentionné dans la section portant sur celles-ci, mais un autre facteur ayant pesé dans notre décision fut le coût de déplacer plusieurs éléments dans un tableau à chaque accès au tlb ou à un frame pour ce qui est le cas du gestionnaire de la mémoire virtuelle (vmm). Nous avons décidé d'utiliser le même principe d'algortihme pour le choix des frames dans le tlb et le vmm quoi que chacun à ses particularités dans son  implémentation.  Ces algorithmes nous ont permis d'obtenir de bons rendements que ce soit par exemple au niveau des tlb hits.
+Algorithme : Nous avions décidé d’implémenter le LRU, car le FIFO offre généralement une performance moindre tel que vu en classe. Notre première approche a été d’implémenter une liste ordonnée qui se met à jour chaque fois qu’un accès est effectué. Cependant, l’implémentation avait quelques problèmes et il semblait compliqué de toujours déplacer tous les éléments. En effet, le déplacement de plusieurs éléments dans un tableau pour chaque accès au tlb ou à un frame revenait lourd. Nous avions aussi eu des problèmes avec la librairie dyn_array au dernier TP donc nous voulions éviter de réutiliser des arrays dynamiques. 
+
+Finalement, nous nous sommes inspirés d’une implémentation expliquée dans le livre expliquant qu’on incrémente le premier bit d’une séquence lors d’un accès et qu’on shift tous les bits subséquents. Cet algorithme est une variante du bit d’accès où on peut avoir un historique des derniers accès. Les bons côtés sont que cet algorithme était facile à implémenter et permet de rapidement voir les derniers accès. 
+
+La difficulté de l’algorithme était de déterminer la grandeur du chiffre. Nous voulions que ça fonctionne pour les architecture 32 bits et 64 bits. Nous avons finalement décidé d’implémenter le 32 pour qu’il soit compatible avec les deux (via l’utilisation de 0x80000000). Au départ, nous utilisions seulement un unsigned int, mais par la suite nous avons eu besoin de plus d’informations relatives aux éléments, donc nous avons transformé notre paramètre en une structure contenant plusieurs attributs (framenumb,pagenumb,valid,UInt).
+
+Il est à noter que l’algorithme pour le TLB et pour le swapping des frames (paging) est le même, qui est LRU.
+
+\par
+Nous avons décider de faire une implémentation qui est le plus possible réaliste. Ainsi, nous ne copions le contenu des frames (backup) que lorsque nous voulons écrire sur celles-ci (dirty). Cela permet de minimmiser le nombre d’opérations IO (celles-ci sont généralement les opérations les plus coûteuses sur de vrais systèmes). 
+
+\par
+Copy on write : Nous avons jugé qu'il serait pertinent d'utiliser une stratégie permettant de gérer l’écriture sur une page readonly. C’est à ce moment que nous nous sommes rendus compte que nous devions modifier notre structure initiale du LRU pour inclure plus d’éléments. Plusieurs difficultés sont apparues, car nous n’étions pas certain comment gérer la présence de 2 frames pointant vers la même page dans la table de pages. Après avoir lu en ligne et révisé les notes, il n’était pas clair comment agir avec ce cas-là. Nous avons donc fait au meilleur de nos connaissances pour l’implémentation de cette variante. De façon surprenante, après avoir ajouté cette gestion des bugs readonly, nous avons amélioré nos statistiques sur tous les tests.
+
+
+
 \section{Améliorations possibles}
-Nous pourrions implanter une table de page multi-niveau ou nous pourrions implanter de manière plus réaliste le "copy on write". Il serait aussi intéressant de gérer plusieurs tables de pages soit une pour chaque processus fictif afin d'avoir une implentation qui se rapproche encore plus de la réalité.
+Nous pourrions implanter une table de page multi-niveaux nous permettant ainsi d’augmenter la portée de notre algorithme. Cependant, on se souvient que cette manière de faire augmente également les accès mémoire, ce qui peut faire baisser les performances globales du système. Sinon, il serait aussi intéressant de gérer plusieurs tables de pages soit une pour chaque processus fictif afin d'avoir une implentation qui se rapproche encore plus de la réalité.
+
+Une autre idée est d’implémenter de manière plus complète le "copy on write” permettant de gérer des accès en parallèle.
 
 \section{Fonctionnement du code}
 
-Pour l'implémentation du "copy on write" nous allons obtenir un frame puis nous sauvegardons son contenu en mémoire. Par la suite nous allons chercher le contenu de la page sur laquelle nous voulionns écrire mais qui était read only puis nous téléchargeons le contenu de celle-ci dans le frame que nous avions obtenu puis nous allons modifier la table de page. Pour la sauvegarde en mémoire nous n'écrivons le contenu des frames en mémoires que s'ils ont été modifiées donc s'ils sont "dirty". 
+Pour l'implémentation du "copy on write" :
+Nous obtenons un frame (libre ou victime)
+Nous sauvegardons son contenu en mémoire
+Nous allons chercher le contenu de la page sur laquelle nous voulions écrire 
+Nous téléchargeons le contenu de celle-ci dans le frame que nous avions obtenu
+Nous modifions la table de page. 
+Pour la sauvegarde en mémoire nous n'écrivons le contenu des frames en mémoire que s'ils ont été modifiées (i.e. s’ils sont dirty)
+
 \par 
-Pour les algorithmes d'ordonnancement nous utilisons les bits shifts afin savoir qu'elle frame a la plus grande durées d'inutilisation depuis sa dernière utilisation.
+Pour les algorithmes d'ordonnancement nous utilisons les bits shifts afin savoir qu'elle frame a la plus récente utilisation.
+
 \end{document}
+
