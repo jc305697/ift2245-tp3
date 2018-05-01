@@ -27,32 +27,29 @@ Nous ne pouvions plus à un certain moment déboguer à l'aide d'impression sur 
 \par
 Nous avons aussi  eu des problèmes qui étaient causé par de petites erreurs, mais qui nous ont pris du temps à trouver la source de ces erreurs. Par exemple, nous avions un if qui avait comme condition qu'un unsigned integer soirt < 0 ce qui bien sûre n'arrivait jamais.
 \par
-
 Unsigned Integer : Comparaison, problématique
 Commandes de style fseek, fwrite, fread, fputs
-
 Bien été
 Memset, commence à être habitué
 Strncpy
-
 Algorithme
 Au début : implémentation liste 
 Un peu compliqué  et  coûteux de toujours déplacer tous les éléments
-
 Ensuite implémentation binaire, shift
 Comment gérer l’ajout : utilisation du 100000000 pour 64 bits 
 Même algo LRU et PT
-
 Bons rendements
-
 Implémentation copy on write et gestion readonly
 
 \section{Résultats}
 
 
 \section{Algo et choix implantés}
-Backup juste si dirty
-Copie on write baisse les perfos (plus réaliste)
+Nous avons décider d'essayer de faire une implémentation qui serait la plus réaliste possible donc nous avons fait en sorte que nous ne copions le contenu des frames que lorsque nous aurions écris sur ceux-ci donc lorsque ceux-ci sont dirty afin de faire en sorte de minimmiser le nombre d'IO operation au total puisque ces dernières sont les opérations les plus coûteuses sur les systèmes réels. 
+\par
+Nous avons aussi choisi de faire un algorithme pour les écritures sur les frames qui sont readonly qui s'inspire du "copy on write" afin d'avoir une implémentation la plus proche de la réalité que possible même si ça nous a apporté plusieurs difficultés comme mentionné  plus haut dans ce rapport et que ça a un certain impact sur les performances de notre implentation.
+\par 
+Nous avions au début décidé d'implanté un algortihme LRU qui servait d'une liste qui se trouvait dans un tableau, mais nous avons décidé d'abandonner cette idée après avoir rencontré des difficultés comme mentionné dans la section portant sur celles-ci, mais un autre facteur ayant pesé dans notre décision fut le coût de déplacer plusieurs éléments dans un tableau à chaque accès au tlb ou à un frame pour ce qui est le cas du gestionnaire de la mémoire virtuelle (vmm). Nous avons décidé d'utiliser le même principe d'algortihme pour le choix des frames dans le tlb et le vmm quoi que chacun à ses particularités dans son  implémentation.  Ces algorithmes nous ont permis d'obtenir de bons rendements que ce soit par exemple au niveau des tlb hits.
 \section{Améliorations possibles}
 
 
