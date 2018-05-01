@@ -50,7 +50,7 @@ Command.in
 worstCase.in
 98.9\% TLB Miss et 90 PF $\rightarrow $ Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
 
-TLBLRU.in --> command1.in : BESOIN DE LA CONFIG 3,3 pour voir l'algorithme
+TLBLRU.in $\rightarrow $ command1.in : BESOIN DE LA CONFIG 3,3 pour voir l'algorithme
 Permet de voir que le LRU fonctionne bien via un test simple (frame 3 remplace 1 et 4 remplace 2)
 
 
@@ -73,7 +73,7 @@ La difficulté de l’algorithme était de déterminer la grandeur du chiffre. N
 Il est à noter que l’algorithme pour le TLB et pour le swapping des frames (paging) est le même  soit un algorithme  LRU.
 
 \par
-Nous avons décider de faire une implémentation qui est la plus réaliste possible . Ainsi, nous ne copions le contenu des frames (backup) que lorsque nous voulons écrire sur celles-ci (dirty). Cela permet de minimmiser le nombre d’opérations IO (celles-ci sont généralement les opérations les plus coûteuses sur de vrais systèmes). 
+Nous avons décider de faire une implémentation qui est la plus réaliste possible . Ainsi, nous ne copions le contenu des frames (backup) que lorsque nous avons écrit sur celles-ci (dirty). Cela permet de minimmiser le nombre d’opérations IO (celles-ci sont généralement les opérations les plus coûteuses sur de vrais systèmes). 
 
 \par
 Copy on write : Nous avons jugé qu'il serait pertinent d'utiliser une stratégie permettant de gérer l’écriture sur une page readonly. C’est à ce moment que nous nous sommes rendus compte que nous devions modifier notre structure initiale du LRU pour inclure plus d’éléments. Plusieurs difficultés sont apparues, car nous n’étions pas certain comment gérer la présence de 2 frames pointant vers la même page dans la table de pages. Après avoir lu en ligne et révisé les notes, il n’était pas clair comment agir avec ce cas-là. Nous avons donc fait au meilleur de nos connaissances pour l’implémentation de cette variante. De façon surprenante, après avoir ajouté cette gestion des bugs readonly, nous avons amélioré nos statistiques sur tous les tests.
