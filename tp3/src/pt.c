@@ -108,7 +108,7 @@ void pt_set_dirty(unsigned int page_number,bool dirty){
 void pt_set_entry (unsigned int page_number, unsigned int frame_number)
 {
   pt_set_count++;
-  pt__set_entry (page_number, frame_number, readonly);
+  pt__set_entry (page_number, frame_number);
 }
 
 int pt_lookup (unsigned int page_number)

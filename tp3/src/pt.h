@@ -13,7 +13,7 @@ int pt_lookup (unsigned int page_number);
 
 /* Modifie l'entrée de `page_number` dans la page table pour qu'elle
  * pointe vers `frame_number`.  */
-void pt_set_entry (unsigned int page_number, unsigned int frame_number, bool readonly);
+void pt_set_entry (unsigned int page_number, unsigned int frame_number);
 
 /* Marque l'entrée de `page_number` dans la page table comme invalide.  */
 void pt_unset_entry (unsigned int page_number);
