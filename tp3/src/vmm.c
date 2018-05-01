@@ -86,7 +86,8 @@ int getFrame(unsigned int pageNumber, bool readonly){
 		pt_unset_entry(frame.numPage);
 	}
 	pm_download_page(pageNumber,frameNumber);
-	pt_set_entry(pageNumber,frameNumber, readonly);
+	pt_set_entry(pageNumber,frameNumber);
+	pt_set_readonly(pageNumber,readonly);
 	miseAjourSequenceAcces(frameNumber,pageNumber,false);
 	return frameNumber;
 }

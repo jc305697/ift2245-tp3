@@ -46,13 +46,11 @@ static int pt__lookup (unsigned int page_number)
 
 /* Modifie l'entrée de `page_number` dans la page table pour qu'elle
  * pointe vers `frame_number`.  */
-static void pt__set_entry (unsigned int page_number, unsigned int frame_number, 
-bool readonly)
+static void pt__set_entry (unsigned int page_number, unsigned int frame_number)
 {
   if (page_number < NUM_PAGES  && page_number >= 0)
   {
     page_table[page_number].valid = true;
-	pt_set_readonly(page_number, readonly);
     pt_set_dirty(page_number,false);
     page_table[page_number].frame_number = frame_number;
   }
@@ -107,7 +105,7 @@ void pt_set_dirty(unsigned int page_number,bool dirty){
 
 /******************** ¡ NE RIEN CHANGER CI-DESSOUS !  ******************/
 //Hihihi
-void pt_set_entry (unsigned int page_number, unsigned int frame_number, bool readonly)
+void pt_set_entry (unsigned int page_number, unsigned int frame_number)
 {
   pt_set_count++;
   pt__set_entry (page_number, frame_number, readonly);
