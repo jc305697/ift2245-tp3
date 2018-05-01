@@ -91,12 +91,12 @@ Une autre idée est d’implémenter de manière plus complète le "copy on writ
 \section{Fonctionnement du code}
 
 Pour l'implémentation du "copy on write" :
-Nous obtenons un frame (libre ou victime)
-Nous sauvegardons son contenu en mémoire
-Nous allons chercher le contenu de la page sur laquelle nous voulions écrire 
-Nous téléchargeons le contenu de celle-ci dans le frame que nous avions obtenu
-Nous modifions la table de page. 
-Pour la sauvegarde en mémoire nous n'écrivons le contenu des frames en mémoire que s'ils ont été modifiées (i.e. s’ils sont dirty)
+1) Nous obtenons un frame (libre ou victime)
+2) Nous sauvegardons son contenu en mémoire
+3) Nous allons chercher le contenu de la page sur laquelle nous voulions écrire 
+4) Nous téléchargeons le contenu de celle-ci dans le frame que nous avions obtenu
+5) Nous modifions la table de page. 
+6) Pour la sauvegarde en mémoire nous n'écrivons le contenu des frames en mémoire que s'ils ont été modifiées (i.e. s’ils sont dirty)
 
 \par 
 Pour les algorithmes d'ordonnancement nous utilisons les bits shifts afin savoir qu'elle frame a la plus récente utilisation.
