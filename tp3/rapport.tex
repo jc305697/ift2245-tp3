@@ -33,7 +33,7 @@ Commandes Stream : Chaque TP nous découvrons de nouvelles commandes, donc nous 
 
 
 \par
-Memset & Strncpy : Nous les avions utilisés dans les TPs passés donc nous avons pu rapidement créer un buffer et l’utiliser pour transférer les éléments en mémoire.
+Memset \& Strncpy : Nous les avions utilisés dans les TPs passés donc nous avons pu rapidement créer un buffer et l’utiliser pour transférer les éléments en mémoire.
 
 
 \par
@@ -42,32 +42,29 @@ Adresse Logique : Faire la conversion entre adresse logique et physique s’est 
 
 \par
 \section{Résultats}
-Afin de vraiment tester notre code, nous avons créé plusieurs tests variés. Ainsi, nous avons créé un dossier ‘Extra’ contenant plus de tests.
-
-
-Tests réalisés avec  NUM_FRAMES = 3 et  TLB_NUM_ENTRIES = 3
+Afin de vraiment tester notre code, nous avons créé plusieurs tests variés. Ainsi, nous avons créé un dossier ‘Extra’ contenant plus de tests. Les tests ont été réalisé avec  NUM\_FRAMES = 3 et  TLB\_NUM\_ENTRIES = 3
 
 Command.in
-1 TLB Miss (la première écriture) et 1 seul PF → Normal, on utilise seulement 1 page pour toute l’exécution
+1 TLB Miss (la première écriture) et 1 seul PF -> Normal, on utilise seulement 1 page pour toute l’exécution
 
 worstCase.in
-98.9% TLB Miss et 90 PF → Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
+98.9\% TLB Miss et 90 PF ->Chaque appel est sur la prochaine page (1,2,3,1,2,3,1,2,3…) ce qui force le TLB et la table des pages à swap pour constamment reloader les pages.
 
 TLBLRU.in
 Permet de voir que le LRU fonctionne bien via un test simple (frame 3 remplace 1 et 4 remplace 2)
 
 
-Tests réalisés avec NUM_FRAMES = 32 et   TLB_NUM_ENTRIES = 8
+Tests réalisés avec NUM\_FRAMES = 32 et   TLB\_NUM\_ENTRIES = 8
 
-bestCase.in → !Attention va écrire par dessus le backingstore!
-Écrit de façon séquentiel, TLB Miss de 0.4%.
+bestCase.in ->!Attention va écrire par dessus le backingstore!
+Écrit de façon séquentiel, TLB Miss de 0.4\%.
 
 normalCase.in
-Opérations aléatoires avec les valeurs possibles réduits à 3000, TLB Miss de 70%. On suppose le haut pourcentage, car on accède aux pages de façon aléatoire, mais que les valeurs sont plus restreintes que worstcase.in
+Opérations aléatoires avec les valeurs possibles réduits à 3000, TLB Miss de 70\%. On suppose le haut pourcentage, car on accède aux pages de façon aléatoire, mais que les valeurs sont plus restreintes que worstcase.in
 
 \section{Algo et choix implantés}
 \par
-Algorithme : Nous avions décidé d’implémenter le LRU, car le FIFO offre généralement une performance moindre tel que vu en classe. Notre première approche a été d’implémenter une liste ordonnée qui se met à jour chaque fois qu’un accès est effectué. Cependant, l’implémentation avait quelques problèmes et il semblait compliqué de toujours déplacer tous les éléments. En effet, le déplacement de plusieurs éléments dans un tableau pour chaque accès au tlb ou à un frame revenait lourd. Nous avions aussi eu des problèmes avec la librairie dyn_array au dernier TP donc nous voulions éviter de réutiliser des arrays dynamiques. 
+Algorithme : Nous avions décidé d’implémenter le LRU, car le FIFO offre généralement une performance moindre tel que vu en classe. Notre première approche a été d’implémenter une liste ordonnée qui se met à jour chaque fois qu’un accès est effectué. Cependant, l’implémentation avait quelques problèmes et il semblait compliqué de toujours déplacer tous les éléments. En effet, le déplacement de plusieurs éléments dans un tableau pour chaque accès au tlb ou à un frame revenait lourd. Nous avions aussi eu des problèmes avec la librairie dyn\_array au dernier TP donc nous voulions éviter de réutiliser des arrays dynamiques. 
 
 Finalement, nous nous sommes inspirés d’une implémentation expliquée dans le livre expliquant qu’on incrémente le premier bit d’une séquence lors d’un accès et qu’on shift tous les bits subséquents. Cet algorithme est une variante du bit d’accès où on peut avoir un historique des derniers accès. Les bons côtés sont que cet algorithme était facile à implémenter et permet de rapidement voir les derniers accès. 
 
